@@ -65,107 +65,18 @@ Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 
 
 | 工具 | 项目级目录 | 用户级目录（所有项目可用） | 一键安装 |
 |---|---|---|---|
-| [Claude Code](#claude-code) | `.claude/skills/` | `~/.claude/skills/` | `/plugin` 插件市场 |
-| [Claude.ai / 桌面端](#claudeai--claude-桌面端) | — | 设置中上传 zip | — |
-| [OpenAI Codex](#openai-codexcli--ide-插件--codex-app) | `.agents/skills/` | `~/.agents/skills/` | `$skill-installer` |
-| [Cursor](#cursor) | `.cursor/skills/` 或 `.agents/skills/` | `~/.cursor/skills/` 或 `~/.agents/skills/` | — |
-| [VS Code + GitHub Copilot](#vs-code--github-copilot) | `.github/skills/` 或 `.agents/skills/` | `~/.copilot/skills/` 或 `~/.agents/skills/` | — |
-| [Gemini CLI](#gemini-cli) | `.gemini/skills/` 或 `.agents/skills/` | `~/.gemini/skills/` 或 `~/.agents/skills/` | `gemini skills install` |
-| [Cherry Studio](#cherry-studio) | — | 设置 → 技能 | 从文件夹 / ZIP / GitHub 安装 |
-| [ChatGPT、DeepSeek 等网页对话](#chatgptdeepseek-等不支持-skills-的对话工具) | — | 上传文件或项目知识库 | — |
+| [Claude Code](INSTALL.md#claude-code) | `.claude/skills/` | `~/.claude/skills/` | `/plugin` 插件市场 |
+| [Claude.ai / 桌面端](INSTALL.md#claudeai--claude-桌面端) | — | 设置中上传 zip | — |
+| [OpenAI Codex](INSTALL.md#openai-codexcli--ide-插件--codex-app) | `.agents/skills/` | `~/.agents/skills/` | `$skill-installer` |
+| [Cursor](INSTALL.md#cursor) | `.cursor/skills/` 或 `.agents/skills/` | `~/.cursor/skills/` 或 `~/.agents/skills/` | — |
+| [VS Code + GitHub Copilot](INSTALL.md#vs-code--github-copilot) | `.github/skills/` 或 `.agents/skills/` | `~/.copilot/skills/` 或 `~/.agents/skills/` | — |
+| [Gemini CLI](INSTALL.md#gemini-cli) | `.gemini/skills/` 或 `.agents/skills/` | `~/.gemini/skills/` 或 `~/.agents/skills/` | `gemini skills install` |
+| [Cherry Studio](INSTALL.md#cherry-studio) | — | 设置 → 技能 | 从文件夹 / ZIP / GitHub 安装 |
+| [ChatGPT、DeepSeek 等网页对话](INSTALL.md#chatgptdeepseek-等不支持-skills-的对话工具) | — | 上传文件或项目知识库 | — |
 
 > 💡 **`.agents/skills/` 是通用目录**：Codex、Cursor、VS Code Copilot、Gemini CLI 都会读取它。同时使用多个工具时，放在 `~/.agents/skills/` 一处即可。
 
-先获取文件（以下各节默认已执行）：
-
-```bash
-git clone https://github.com/EvergardenRoxy/SuperFactoryManager_LLM_skill.git
-cd SuperFactoryManager_LLM_skill
-```
-
-也可以在 GitHub 页面点击 **Code → Download ZIP** 后解压。
-
-### Claude Code
-
-插件市场（推荐）：
-
-```text
-/plugin marketplace add EvergardenRoxy/SuperFactoryManager_LLM_skill
-/plugin install minecraft-sfm-factory@sfm-llm-skills
-```
-
-或手动复制：
-
-```bash
-cp -r skills/minecraft-sfm-factory ~/.claude/skills/             # 用户级
-cp -r skills/minecraft-sfm-factory <你的项目>/.claude/skills/     # 项目级
-```
-
-### Claude.ai / Claude 桌面端
-
-将 `skills/minecraft-sfm-factory` 文件夹压缩为 zip，在 **Settings → Capabilities → Skills** 中上传。
-
-### OpenAI Codex（CLI / IDE 插件 / Codex App）
-
-```bash
-mkdir -p ~/.agents/skills
-cp -r skills/minecraft-sfm-factory ~/.agents/skills/             # 用户级
-cp -r skills/minecraft-sfm-factory <你的项目>/.agents/skills/     # 项目级
-```
-
-也可以在 Codex 对话中让内置安装器下载：
-
-```text
-$skill-installer 从 https://github.com/EvergardenRoxy/SuperFactoryManager_LLM_skill 安装 skills/minecraft-sfm-factory
-```
-
-Codex 通常会自动检测新技能；如果没有出现，重启 Codex。
-
-### Cursor
-
-```bash
-cp -r skills/minecraft-sfm-factory ~/.cursor/skills/             # 用户级
-cp -r skills/minecraft-sfm-factory <你的项目>/.cursor/skills/     # 项目级
-```
-
-Cursor 也会读取 `.claude/skills/`、`.agents/skills/`。在 Agent 对话框输入 `/` 可看到并手动调用该技能。
-
-### VS Code + GitHub Copilot
-
-```bash
-cp -r skills/minecraft-sfm-factory ~/.copilot/skills/            # 用户级
-cp -r skills/minecraft-sfm-factory <你的项目>/.github/skills/    # 项目级
-```
-
-在 Copilot Chat 输入 `/skills` 打开 **Configure Skills**，确认列表中出现 `minecraft-sfm-factory`。
-
-### Gemini CLI
-
-```bash
-gemini skills install https://github.com/EvergardenRoxy/SuperFactoryManager_LLM_skill.git \
-  --path skills/minecraft-sfm-factory          # 默认安装到用户级；加 --scope workspace 装到项目
-gemini skills list                             # 确认已安装
-```
-
-### Cherry Studio
-
-1. 将 `skills/minecraft-sfm-factory` 文件夹压缩为 ZIP（或直接使用解压后的文件夹）。
-2. 打开 **设置 → 技能**，选择 **从本地 ZIP 安装** 或 **从文件夹安装**，确认全局开关已打开。
-3. 进入 **工作**，打开要使用的智能体（Agent）菜单 → **编辑 → 技能**，为该智能体启用；从下一条消息开始生效。
-
-> ⚠️ Cherry Studio 也支持在 **GitHub** 来源中粘贴 `SKILL.md` 链接安装，但这种方式可能只拉取 `SKILL.md` 本身。本 Skill 依赖 `references/` 目录，**推荐用 ZIP 或文件夹方式安装**。
-
-### ChatGPT、DeepSeek 等不支持 Skills 的对话工具
-
-1. 在项目 / 自定义 GPT / 知识库中上传 `SKILL.md` 和 `references/` 下的全部文件；若只能上传少量文件，至少上传 `SKILL.md`、`references/language-reference.md` 和 `references/templates.md`。
-2. 在系统提示词或项目指令中写入：
-
-   ```text
-   回答 Minecraft Super Factory Manager（SFM / SFML）相关问题时，严格遵循附件 SKILL.md 的规则；
-   SKILL.md 第 1 节索引指向的细节，到同名附件中查找。不要凭记忆编写 SFML 语法。
-   ```
-
-3. 不支持附件的工具，可直接把 `SKILL.md` 正文（去掉开头的 YAML front matter）粘贴为系统提示词。
+各工具的详细安装步骤见 **[INSTALL.md](INSTALL.md)**。
 
 ## 使用
 
@@ -201,32 +112,10 @@ gemini skills list                             # 确认已安装
 │           └── config-and-versions.md
 ├── scripts/
 │   └── validate_skill.py         # 语法与结构校验
+├── INSTALL.md                    # 各工具安装详解
 ├── LICENSE
 └── README.md
 ```
-
-## 贡献
-
-欢迎通过 Issue / PR 补充：
-
-- 新的实战模板（请注明 SFM 版本，并确保能在游戏中编译运行）
-- 与新版本 SFM 不符的内容
-- 新发现的常见错误与磁盘警告
-
-提交前请运行校验脚本（需要 Java 11+ 和 Python 3.8+，首次运行会下载 ANTLR 与官方语法文件到 `.cache/`）：
-
-```bash
-pip install antlr4-python3-runtime==4.13.2
-python3 scripts/validate_skill.py            # 默认使用 SFM 仓库最新语法
-python3 scripts/validate_skill.py --ref <tag> # 针对特定 SFM 版本的语法
-```
-
-脚本会检查：
-
-- 所有 `sfml` / `sfml-snippet` 代码块能被官方语法解析
-- `SKILL.md` 不超过 500 行，front matter 完整，引用的 `references/*.md` 全部存在
-
-新增的细节内容请放进 `references/`，并在 `SKILL.md` 第 1 节的索引中注明"何时读取"。
 
 ## 致谢
 
@@ -262,6 +151,6 @@ The skill follows the open [Agent Skills](https://agentskills.io) format, so it 
 | OpenAI Codex / Cursor / VS Code Copilot / Gemini CLI | `~/.agents/skills/` (shared by all four) |
 | Cherry Studio | Settings → Skills → install from folder or ZIP |
 
-See the [安装](#安装) section above for per-tool details.
+See [INSTALL.md](INSTALL.md) for per-tool details (in Chinese).
 
 Licensed under [MIT](LICENSE). Content was produced with generative-AI assistance and reviewed by the maintainer.
