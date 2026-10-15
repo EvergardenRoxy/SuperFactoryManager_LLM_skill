@@ -1,3 +1,127 @@
 # SuperFactoryManager LLM Skill
 
-A skill that enables LLMs to write and reason about Super Factory Manager (SFM) programs.
+> 让 Claude（及其他 LLM）正确地编写、审查和调试 Minecraft **Super Factory Manager（SFM）** 程序的 Agent Skill。
+
+[Super Factory Manager](https://github.com/TeamDman/SuperFactoryManager) 是一个用自定义语言 **SFML** 编程的 Minecraft 物流模组。SFML 只有几十个关键字，但语义与常见编程语言差别很大，而且随版本变化频繁——LLM 凭记忆写出的 SFML 经常编译失败，或者能编译但行为不对（例如原料绕过机器直接进产物箱）。
+
+本仓库提供一份**以官方语法文件为准**的 Skill，把 SFML 的语法、执行模型、常见陷阱、效率经验和排错流程整理成 AI 可直接遵循的指南。
+
+[English summary](#english)
+
+---
+
+## 能做什么
+
+| 场景 | 示例提问 |
+|---|---|
+| 编写程序 | "用 SFM 给 64 台熔炉自动补矿石和燃料，产物收进箱子" |
+| 审查程序 | "帮我看看这段 SFML 有没有问题" |
+| 排查故障 | "管理器不工作 / 机器卡死 / 只有一半机器在干活" |
+| 流体 / 能量 / 化学品 | "把 Mekanism 电解分离器的三种气体分别导出" |
+| 堆量工厂设计 | "1024 台装配机怎么分配输出口才不会卡" |
+
+每次回答都会给出：**整体思路 + 标签清单（标签 → 方块 → 面）+ 程序 + 搭建步骤 + 风险提示**，并在交付前对照内置自检清单。
+
+## Skill 内容一览
+
+[`skills/minecraft-sfm-factory/SKILL.md`](skills/minecraft-sfm-factory/SKILL.md)
+
+| 章节 | 内容 |
+|---|---|
+| 0. 铁律 | 给 AI 的 11 条硬约束（不发明语法、input/output 语义、side、forget、引号……） |
+| 1. 协助流程 | 需要问清的信息、设计步骤、回答格式模板 |
+| 2–3. 概念与物品 | 管理器 / 磁盘 / 标签 / 线缆网络、执行模型、标签枪与网络工具操作、编辑器快捷键 |
+| 4. 语言参考 | 词法、触发器、input/output 完整子句、资源 ID、retain/each、with/without、except、round robin、side、slots、forget、if、红石 |
+| 5. 执行时序 | 最常见错误"原料绕过机器"及三种解法 |
+| 6. 效率 | 输出口数量规则、机器选型实测数据、性能提示 |
+| 7. 模板库 | 14 个可直接使用的程序（熔炉阵列、AE2 压印器、有机灌注器、聚变反应堆……） |
+| 8. 自检清单 | 交付前逐条核对 |
+| 9–11. 排错 | 33 条常见错误对照、编译错误与磁盘警告速查、排错流程 |
+| 12–14. 参考 | 服务器配置与命令、版本差异、资料来源与已知出入 |
+
+## 安装
+
+### Claude Code — 插件市场（推荐）
+
+```text
+/plugin marketplace add EvergardenRoxy/SuperFactoryManager_LLM_skill
+/plugin install minecraft-sfm-factory@sfm-llm-skills
+```
+
+### Claude Code — 手动安装
+
+```bash
+git clone https://github.com/EvergardenRoxy/SuperFactoryManager_LLM_skill.git
+# 个人级（所有项目可用）
+cp -r SuperFactoryManager_LLM_skill/skills/minecraft-sfm-factory ~/.claude/skills/
+# 或项目级
+cp -r SuperFactoryManager_LLM_skill/skills/minecraft-sfm-factory <你的项目>/.claude/skills/
+```
+
+### Claude.ai / Claude 桌面端
+
+将 `skills/minecraft-sfm-factory` 文件夹压缩为 zip，在 **Settings → Capabilities → Skills** 中上传。
+
+### 其他 LLM
+
+`SKILL.md` 是纯 Markdown，可直接作为系统提示词或对话附件使用（去掉开头的 YAML front matter 即可）。
+
+## 使用
+
+安装后无需额外操作。当你提到 SFM、Super Factory Manager、工厂管理器、标签枪、`every ... do`、`input`/`output` 等内容时，Skill 会自动触发。
+
+建议在提问时附上：
+
+- **SFM 版本**（模组列表中查看）与 Minecraft 版本——语法随版本变化
+- 涉及的机器 / 模组，以及要搬运的资源类型
+- 现有程序与管理器界面中的报错 / 警告原文
+
+## 准确性说明
+
+- Skill 中全部 `sfml` 代码块均已用官方 ANTLR 语法文件 [`SFML.g4`](https://github.com/TeamDman/SuperFactoryManager/blob/HEAD/platform/minecraft/src/main/antlr/sfml/SFML.g4) 生成的解析器逐一校验通过。
+- 语法校验只能保证"能编译"，不能保证在游戏中的行为。涉及机器侧面配置、槽位编号、版本相关特性（如 `redstone::`）时，Skill 会引导用户在游戏内实测。
+- 与 DeepWiki、旧文档等资料的已知出入见 SKILL.md 第 14 节。
+
+## 目录结构
+
+```text
+.
+├── .claude-plugin/
+│   └── marketplace.json          # Claude Code 插件市场清单
+├── skills/
+│   └── minecraft-sfm-factory/
+│       └── SKILL.md              # Skill 本体
+└── README.md
+```
+
+## 贡献
+
+欢迎通过 Issue / PR 补充：
+
+- 新的实战模板（请注明 SFM 版本，并确保能在游戏中编译运行）
+- 与新版本 SFM 不符的内容
+- 新发现的常见错误与磁盘警告
+
+修改 `SKILL.md` 中的代码块后，请确保它们仍符合当前版本的 `SFML.g4`。
+
+## 致谢
+
+- [TeamDman/SuperFactoryManager](https://github.com/TeamDman/SuperFactoryManager)——模组本体、语法文件与官方示例
+- 社区玩家分享的效率测试数据与工厂程序
+
+---
+
+<a id="english"></a>
+
+## English
+
+An [Agent Skill](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview) that teaches Claude to write, review and debug programs for the Minecraft mod **Super Factory Manager** (SFML language). The skill content is written in Chinese and covers the full language reference, execution model, common pitfalls, a template library, a pre-delivery checklist and troubleshooting guides. All `sfml` code blocks are validated against the official ANTLR grammar.
+
+Install with Claude Code:
+
+```text
+/plugin marketplace add EvergardenRoxy/SuperFactoryManager_LLM_skill
+/plugin install minecraft-sfm-factory@sfm-llm-skills
+```
+
+Or copy `skills/minecraft-sfm-factory/` into `~/.claude/skills/`.
