@@ -1,0 +1,21 @@
+{
+  "name": "sfm-llm-skills",
+  "owner": {
+    "name": "EvergardenRoxy"
+  },
+  "metadata": {
+    "description": "Agent Skills for Minecraft Super Factory Manager (SFM / SFML)",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "minecraft-sfm-factory",
+      "description": "编写、审查、调试 Super Factory Manager（SFML）程序，设计 Minecraft 自动化工厂的标签与输入输出布局。",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/minecraft-sfm-factory"
+      ]
+    }
+  ]
+}
