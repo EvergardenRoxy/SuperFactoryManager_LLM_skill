@@ -64,7 +64,7 @@ Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 
 
 本 Skill 遵循开放的 [Agent Skills](https://agentskills.io) 格式：一个包含 `SKILL.md` 的文件夹（本仓库为 `skills/minecraft-sfm-factory/`，**连同 `references/` 一起复制**）。支持该格式的工具只需把文件夹放进对应目录即可自动加载。
 
-**最简单的方式**：从 [Releases](https://github.com/EvergardenRoxy/SuperFactoryManager_LLM_skill/releases/latest) 下载打包好的 **`SFM_prompt_pack.zip`**，可直接上传到 Claude.ai、Cherry Studio 等工具，或解压到下表目录下的 `minecraft-sfm-factory/` 文件夹中。
+**最简单的方式**：从 [Releases](https://github.com/EvergardenRoxy/SuperFactoryManager_LLM_skill/releases/latest) 下载打包好的 **`SFM_LLM_skill<版本号>.zip`**（当前版本：[`SFM_LLM_skill1.0.1.zip`](https://github.com/EvergardenRoxy/SuperFactoryManager_LLM_skill/releases/download/v1.0.1/SFM_LLM_skill1.0.1.zip)），可直接上传到 Claude.ai、Cherry Studio 等工具，或解压到下表目录下的 `minecraft-sfm-factory/` 文件夹中。
 
 ### 速查表
 
