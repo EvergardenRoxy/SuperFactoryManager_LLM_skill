@@ -39,7 +39,7 @@ description: 协助用户在 Minecraft 中使用 Super Factory Manager（SFM，�
 | 机器阵列 ≥ 数十台、多种产物、"只有一部分机器在干活"、选哪种机器堆量 | `references/efficiency.md` |
 | 问到标签枪/网络工具操作、编辑器快捷键、线缆种类、蓄水槽、隧道式管理器 | `references/items-and-tools.md` |
 | 问到服务器配置、`/sfm` 命令、某特性从哪个版本开始、资料出入 | `references/config-and-versions.md` |
-| 需求有严格的加料顺序、"等 A 完成再做 B"、多方块/仪式类合成、计数、多段化学链、AE 样板供应器配合、多种副产物防卡死、红石时钟提速 | `references/advanced-patterns.md` |
+| 需求有严格的加料顺序、"等 A 完成再做 B"、多方块/仪式类合成、计数、多段化学链、AE 样板供应器配合、多种副产物防卡死、红石时钟提速、**自循环增产**、蓄能后定量放电、**用 SFM 控制红石电路** | `references/advanced-patterns.md` |
 
 ---
 
@@ -94,7 +94,7 @@ description: 协助用户在 Minecraft 中使用 Super Factory Manager（SFM，�
 
 ### 2.4 简化原则（写完程序后逐条过一遍）
 
-1. **能不用 SFM 就不用**：固定方向、单一路线的搬运（机器自动弹出、管道、AE/RS 接口能完成的），建议交给它们；SFM 负责需要分配、判断、跨距离的部分。
+1. **能不用 SFM 就不用**：固定方向、单一路线的搬运（机器自动弹出、管道、AE/RS 接口能完成的），建议交给它们；SFM 负责需要分配、判断、跨距离的部分。模组本身或其扩展模组提供了更简单的自动化方式时，优先推荐那种方式。
 2. **一类机器一个标签**，用 `to each` / `from each` 批量处理；不要每台机器一个标签、一段代码。
 3. **控制数量用 `retain`**，不用 `if … has` 判断后再搬。
 4. **溢出靠 output 的先后顺序**（先主仓、后备用/垃圾桶），不用 `if` 判断是否满了。
@@ -218,6 +218,8 @@ output to b
 | `redstone::` | 读取被标签方块发出的红石信号（只读，4.27.0+，见 4.8） |
 
 **⚠ 高频错误**：`fluid:water`（2 段 → 被当成"命名空间 fluid 的物品 water"）✗ → `fluid::water` ✓；`fe` ✗ → `fe::` ✓。
+
+**⚠ SFM 无法区分 NBT / 数据组件**：过滤只看注册 ID 和 tag。注册 ID 相同、只靠 NBT/数据组件区分的物品，SFM 一律视为同一种。常见例子：ATM10 中资源蜜蜂的各种蜜脾（都是 `productivebees:configurable_comb`）、药水、附魔书、刷怪蛋类物品。遇到这种需求，**直接告诉用户 SFM 做不到按种类区分**，不要用正则或 tag 硬凑；应先用能识别 NBT 的模组（如 AE2/RS 的分区或过滤卡、带 NBT 过滤的管道或过滤器）把它们分开，再由 SFM 负责运输。
 模组没装会报 `Program references an unknown resource type "xxx"`。
 
 ### 4.5 数量、retain、each

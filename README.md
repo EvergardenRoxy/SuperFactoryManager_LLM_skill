@@ -52,9 +52,9 @@ Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 
 |---|---|
 | `language-reference.md` | 完整语言参考：正则表、with/without、except、round robin、empty slots、if 集合限定、红石细节 |
 | `templates.md` | 14 个可直接使用的程序（熔炉阵列、AE2 压印器、有机灌注器、聚变反应堆……） |
-| `troubleshooting.md` | 38 条常见错误对照、编译错误与磁盘警告速查、排错流程 |
+| `troubleshooting.md` | 40 条常见错误对照、编译错误与磁盘警告速查、排错流程 |
 | `efficiency.md` | 输出口数量规则、机器选型实测数据、降低卡顿的手段 |
-| `advanced-patterns.md` | 进阶模式：计数寄存器、状态机、多段加工链、AE 样板供应器按槽位分发、防满仓卡死、红石时钟提速 |
+| `advanced-patterns.md` | 进阶模式：计数寄存器、状态机、多段加工链、AE 样板供应器按槽位分发、防满仓卡死、红石时钟提速、自循环增产、蓄能放电、事件驱动、用容器 + 比较器控制红石电路 |
 | `items-and-tools.md` | 物品与方块、标签枪与网络工具操作、编辑器快捷键 |
 | `config-and-versions.md` | 服务器配置与命令、版本差异、资料来源与已知出入 |
 
