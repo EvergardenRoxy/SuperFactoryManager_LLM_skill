@@ -32,20 +32,30 @@
 
 ## Skill 内容一览
 
-[`skills/minecraft-sfm-factory/SKILL.md`](skills/minecraft-sfm-factory/SKILL.md)
+Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 350 行），细节文件由模型在需要时按索引读取，避免每次占用大量上下文。
+
+**核心文件** [`SKILL.md`](skills/minecraft-sfm-factory/SKILL.md)（每次触发时加载）
 
 | 章节 | 内容 |
 |---|---|
-| 0. 铁律 | 给 AI 的 11 条硬约束（不发明语法、input/output 语义、side、forget、引号……） |
-| 1. 协助流程 | 需要问清的信息、设计步骤、回答格式模板 |
-| 2–3. 概念与物品 | 管理器 / 磁盘 / 标签 / 线缆网络、执行模型、标签枪与网络工具操作、编辑器快捷键 |
-| 4. 语言参考 | 词法、触发器、input/output 完整子句、资源 ID、retain/each、with/without、except、round robin、side、slots、forget、if、红石 |
+| 0. 铁律 | 给 AI 的 12 条硬约束（不发明语法、input/output 语义、side、forget、引号、按需查参考……） |
+| 1. 参考文件索引 | "遇到什么情况读哪个文件"的路由表 |
+| 2. 协助流程 | 需要问清的信息、设计步骤、回答格式模板 |
+| 3. 执行模型 | 管理器 / 磁盘 / 标签 / 线缆网络，输入列表的登记与消费 |
+| 4. 语言速查 | 词法、触发器、input/output 子句顺序、资源 ID、retain/each、side/slots、forget/if、红石 |
 | 5. 执行时序 | 最常见错误"原料绕过机器"及三种解法 |
-| 6. 效率 | 输出口数量规则、机器选型实测数据、性能提示 |
-| 7. 模板库 | 14 个可直接使用的程序（熔炉阵列、AE2 压印器、有机灌注器、聚变反应堆……） |
-| 8. 自检清单 | 交付前逐条核对 |
-| 9–11. 排错 | 33 条常见错误对照、编译错误与磁盘警告速查、排错流程 |
-| 12–14. 参考 | 服务器配置与命令、版本差异、资料来源与已知出入 |
+| 6. 自检清单 | 交付前逐条核对 |
+
+**参考文件** [`references/`](skills/minecraft-sfm-factory/references)（按需读取）
+
+| 文件 | 内容 |
+|---|---|
+| `language-reference.md` | 完整语言参考：正则表、with/without、except、round robin、empty slots、if 集合限定、红石细节 |
+| `templates.md` | 14 个可直接使用的程序（熔炉阵列、AE2 压印器、有机灌注器、聚变反应堆……） |
+| `troubleshooting.md` | 33 条常见错误对照、编译错误与磁盘警告速查、排错流程 |
+| `efficiency.md` | 输出口数量规则、机器选型实测数据、性能提示 |
+| `items-and-tools.md` | 物品与方块、标签枪与网络工具操作、编辑器快捷键 |
+| `config-and-versions.md` | 服务器配置与命令、版本差异、资料来源与已知出入 |
 
 ## 安装
 
@@ -86,7 +96,7 @@ cp -r SuperFactoryManager_LLM_skill/skills/minecraft-sfm-factory <你的项目>/
 
 ## 准确性说明
 
-- Skill 中全部 `sfml` 代码块均已用官方 ANTLR 语法文件 [`SFML.g4`](https://github.com/TeamDman/SuperFactoryManager/blob/HEAD/platform/minecraft/src/main/antlr/sfml/SFML.g4) 生成的解析器逐一校验通过。
+- Skill 中全部 `sfml` 代码块均已用 [`scripts/validate_skill.py`](scripts/validate_skill.py) 依据官方 ANTLR 语法文件 [`SFML.g4`](https://github.com/TeamDman/SuperFactoryManager/blob/HEAD/platform/minecraft/src/main/antlr/sfml/SFML.g4) 生成的解析器逐一校验通过。
 - 语法校验只能保证"能编译"，不能保证在游戏中的行为。涉及机器侧面配置、槽位编号、版本相关特性（如 `redstone::`）时，Skill 会引导用户在游戏内实测。
 - 与 DeepWiki、旧文档等资料的已知出入见 SKILL.md 第 14 节。
 
@@ -98,7 +108,16 @@ cp -r SuperFactoryManager_LLM_skill/skills/minecraft-sfm-factory <你的项目>/
 │   └── marketplace.json          # Claude Code 插件市场清单
 ├── skills/
 │   └── minecraft-sfm-factory/
-│       └── SKILL.md              # Skill 本体
+│       ├── SKILL.md              # 核心：规则、执行模型、语言速查、自检清单
+│       └── references/           # 按需读取的细节文件
+│           ├── language-reference.md
+│           ├── templates.md
+│           ├── troubleshooting.md
+│           ├── efficiency.md
+│           ├── items-and-tools.md
+│           └── config-and-versions.md
+├── scripts/
+│   └── validate_skill.py         # 语法与结构校验
 ├── LICENSE
 └── README.md
 ```
@@ -111,7 +130,20 @@ cp -r SuperFactoryManager_LLM_skill/skills/minecraft-sfm-factory <你的项目>/
 - 与新版本 SFM 不符的内容
 - 新发现的常见错误与磁盘警告
 
-修改 `SKILL.md` 中的代码块后，请确保它们仍符合当前版本的 `SFML.g4`。
+提交前请运行校验脚本（需要 Java 11+ 和 Python 3.8+，首次运行会下载 ANTLR 与官方语法文件到 `.cache/`）：
+
+```bash
+pip install antlr4-python3-runtime==4.13.2
+python3 scripts/validate_skill.py            # 默认使用 SFM 仓库最新语法
+python3 scripts/validate_skill.py --ref <tag> # 针对特定 SFM 版本的语法
+```
+
+脚本会检查：
+
+- 所有 `sfml` / `sfml-snippet` 代码块能被官方语法解析
+- `SKILL.md` 不超过 500 行，front matter 完整，引用的 `references/*.md` 全部存在
+
+新增的细节内容请放进 `references/`，并在 `SKILL.md` 第 1 节的索引中注明"何时读取"。
 
 ## 致谢
 
