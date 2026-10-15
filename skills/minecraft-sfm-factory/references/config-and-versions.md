@@ -45,10 +45,10 @@
 | 4.22.0 | 修复 `retain`（#306 等）；修复 `SECOND`；标签最长 256 |
 | 4.24.0 | 修复秒级偏移未乘 20 |
 | 4.25.0 | `output to empty slots in …` |
-| 4.27.0 | 隧道式管理器；`slot` 单数；相对方向 `left/right/front/back`；管理器可操作自己；修复 forget 内存泄漏 |
+| 4.27.0 | 隧道式管理器；`slot` 单数；相对方向 `left/right/front/back`；`redstone::` 读取方块红石信号；管理器可操作自己；修复 forget 内存泄漏 |
 | 4.29.0 | 隧道线缆、坚固线缆；网络工具调谐；无法抽取槽位的警告 |
 | 4.34.0 | 精致线缆可含水 |
-| 4.35.0 PRE（开发线） | `redstone::` 标签读取与实验性缓冲器计数；`OFFSET BY` 新式偏移；旧 `+` 偏移警告；Client Manager 等显示/通信功能（与工厂搬运无关，忽略） |
+| 4.35.0 PRE（开发线） | 实验性缓冲器红石计数；`OFFSET BY` 新式偏移；旧 `+` 偏移警告；Client Manager 等显示/通信功能（与工厂搬运无关，忽略） |
 
 > 开发线语法里还有 `LET … BE …`、`EVERY FRAME …`、`CREATE INPUT`、`BROADCAST`、`RENDER IMAGE`、`INVOKE`、`JSON`、`WITH CAPABILITY`、`AS`：它们属于 Client Manager（客户端显示/收发）实验功能，**不用于工厂物流**。用户没明确要求时不要使用。
 
@@ -66,6 +66,6 @@
 2. 部分资料写"`empty slots in` 可用于 input"。**语法上只有 output 支持。**
 3. 旧示例里"`not`、`and`、`or` 优先级相同"。**语法文件里是 not > and > or**；仍建议加括号。
 4. 旧资料的正则示例 `"[^(iron_ingot)].*"` 用来"排除铁锭"是错的（见 `language-reference.md` 的"资源 ID"一节）。
-5. `redstone::`（信号读取）出现的版本：用户资料写 ≥4.27.0，仓库更新日志写在 4.35.0 PRE。**需让用户实测。**
+5. `redstone::`（读取方块红石信号）：社区资料与维护者确认为 4.27.0 起可用，现代版本直接使用即可；开发线 4.35.0 PRE 新增的是实验性缓冲器计数，与普通玩家无关。
 6. 程序最大长度：更新日志写约 32,300，源码常量为 32,600；以"约 32,300"为安全线。
 7. 配置文件：用户资料写 `config/sfm-server.toml`（4.20.0+）或 `config/sfm-common.toml`；Forge 的**服务器配置通常在存档目录的 `serverconfig/` 里**。最稳妥的方式是用管理器界面的 View server config 或 `/sfm config` 命令定位。

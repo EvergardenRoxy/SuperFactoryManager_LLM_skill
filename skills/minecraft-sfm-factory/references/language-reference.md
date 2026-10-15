@@ -130,7 +130,7 @@ end
 | `forge_energy` | Forge 能量（FE） | `fe`、`rf`、`energy`、`power` | 默认只允许它做 1 刻触发器 |
 | `mekanism_energy` | 通用机械能量，单次传输上限 MAX_LONG | | 仅 MC 1.19.2 版本；需 Mekanism |
 | `chemical` | 通用机械化学品 | `gas`（气体）、`infusion`（灌注）、`slurry`（浆液）、`pigment`（颜料） | `chemical` 这个名字需 MC ≥ 1.21.1，其他版本用别名；需 Mekanism |
-| `redstone` | 红石信号（世界方块**只读**）/ 实验性缓冲器里的计数 | | 版本存疑，见下方"红石"一节 |
+| `redstone` | 红石信号（世界方块**只读**）/ 实验性缓冲器里的计数 | | 4.27.0+，见下方"红石"一节 |
 
 **⚠ 高频错误**：
 
@@ -464,13 +464,14 @@ end
 
 | 写法 | 含义 | 版本 |
 |---|---|---|
-| `every redstone pulse do … end` | 红石脉冲触发器（管理器收到脉冲） | 长期支持 |
+| `every redstone pulse do … end` | 红石脉冲触发器（管理器收到脉冲）；不受最小间隔限制 | 长期支持 |
 | `if redstone [<比较符> <数>] then` | 判断**管理器自身**收到的红石强度 | 长期支持 |
-| `if abc [<面> side] has <比较符> <数> redstone:: then` | 读取**被标签方块**发出的红石信号（杠杆、比较器、红石块等），只读 | 版本存疑（见下） |
+| `if abc [<面> side] has <比较符> <数> redstone:: then` | 读取**被标签方块**发出的红石信号（杠杆、比较器、红石块等），只读 | 4.27.0+ |
 | `redstone`（物品）| 红石粉**物品**，与上面完全无关 | |
 
 - 物品红石粉：`input redstone from a`（4.14.0+ 不加引号也可），或更稳妥地写 `item:minecraft:redstone` / `"minecraft:redstone"`。
 - `redstone::`（红石信号资源）：读取的是**方块发出的弱信号 0–15**，不是输入进来的信号；不加面时取六个面的最强值；加 `east side` 则取该面。它**只读**，不能 `output` 到世界方块里。
 - 实验性"缓冲器"（`sfm:buffer`，开发期方块）可存红石计数，用 `input 1 redstone:: from donor` / `output redstone:: to counter` 搬运，比较器读数为 `min(存量, 15)`。普通玩家基本用不到。
-- **版本存疑**：用户提供的资料标注 `redstone` 资源类型"≥4.27.0"；仓库当前开发线（4.35.0 PRE，MC 1.19.2 分支）的更新日志把"标签红石读取"列在 4.35.0 PRE。**无法确定用户版本是否支持。** 做法：让用户先写一行 `if abc has > 0 redstone:: then output to b end` 测试，编译报 `unknown resource type` 就换成 `if redstone` 或让用户升级。
+- 现代版本均支持以上红石功能，**不需要先询问用户版本**；只有用户明确使用很旧的版本（< 4.27.0）且编译报 `unknown resource type "redstone"` 时，才改用 `if redstone` 或建议升级。
+- 用红石时钟驱动 `every redstone pulse` 可以突破 20 刻的最小间隔，但频率越高开销越大，见 `advanced-patterns.md`"红石时钟提速"。
 - 隧道式管理器**不传红石**。
