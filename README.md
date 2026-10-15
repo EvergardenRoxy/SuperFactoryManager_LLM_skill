@@ -1,5 +1,8 @@
 # SuperFactoryManager LLM Skill
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![AI Assisted](https://img.shields.io/badge/AI-Claude%20Opus%205.5%20%2B%20Claude%20Code-D97757?style=for-the-badge&logo=anthropic&logoColor=white)](#ai-制作声明)
+
 > 让 Claude（及其他 LLM）正确地编写、审查和调试 Minecraft **Super Factory Manager（SFM）** 程序的 Agent Skill。
 
 [Super Factory Manager](https://github.com/TeamDman/SuperFactoryManager) 是一个用自定义语言 **SFML** 编程的 Minecraft 物流模组。SFML 只有几十个关键字，但语义与常见编程语言差别很大，而且随版本变化频繁——LLM 凭记忆写出的 SFML 经常编译失败，或者能编译但行为不对（例如原料绕过机器直接进产物箱）。
@@ -7,6 +10,11 @@
 本仓库提供一份**以官方语法文件为准**的 Skill，把 SFML 的语法、执行模型、常见陷阱、效率经验和排错流程整理成 AI 可直接遵循的指南。
 
 [English summary](#english)
+
+<a id="ai-制作声明"></a>
+
+> [!IMPORTANT]
+> **AI 制作声明：SuperFactoryManager LLM Skill 采用生成式 AI 参与内容编写、语法校验与文档撰写。** AI 生成或修改的内容由项目维护者审阅、验证并承担最终维护责任。
 
 ---
 
@@ -91,6 +99,7 @@ cp -r SuperFactoryManager_LLM_skill/skills/minecraft-sfm-factory <你的项目>/
 ├── skills/
 │   └── minecraft-sfm-factory/
 │       └── SKILL.md              # Skill 本体
+├── LICENSE
 └── README.md
 ```
 
@@ -109,6 +118,12 @@ cp -r SuperFactoryManager_LLM_skill/skills/minecraft-sfm-factory <你的项目>/
 - [TeamDman/SuperFactoryManager](https://github.com/TeamDman/SuperFactoryManager)——模组本体、语法文件与官方示例
 - 社区玩家分享的效率测试数据与工厂程序
 
+## 许可证
+
+[MIT](LICENSE) © 2026 EvergardenRoxy
+
+本仓库仅包含说明文档，不包含 Super Factory Manager 模组本身的代码；SFM 模组遵循其自身的许可证。
+
 ---
 
 <a id="english"></a>
@@ -125,3 +140,5 @@ Install with Claude Code:
 ```
 
 Or copy `skills/minecraft-sfm-factory/` into `~/.claude/skills/`.
+
+Licensed under [MIT](LICENSE). Content was produced with generative-AI assistance and reviewed by the maintainer.
