@@ -32,14 +32,14 @@
 
 ## Skill 内容一览
 
-Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 390 行），细节文件由模型在需要时按索引读取，避免每次占用大量上下文。
+Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 410 行），细节文件由模型在需要时按索引读取，避免每次占用大量上下文。
 
 **核心文件** [`SKILL.md`](skills/minecraft-sfm-factory/SKILL.md)（每次触发时加载）
 
 | 章节 | 内容 |
 |---|---|
-| 0. 铁律 | 给 AI 的 13 条硬约束（不发明语法、input/output 语义、side、forget、引号、按需查参考、简单优先……） |
-| 1. 参考文件索引 | "遇到什么情况读哪个文件"的路由表 |
+| 0. 铁律 | 给 AI 的 13 条硬约束（不发明语法、input/output 语义、side、forget、引号、按需查参考、简单优先……），以及"SFM 做不到的事"与替代方案 |
+| 1. 任务路由 | 写程序 / 审查 / 排错 / 优化 / 解释各走什么流程，以及"遇到什么情况读哪个文件" |
 | 2. 协助流程 | 需要问清的信息、设计步骤、回答格式模板、**简化原则与必须提示性能风险的情况** |
 | 3. 执行模型 | 管理器 / 磁盘 / 标签 / 线缆网络，输入列表的登记与消费 |
 | 4. 语言速查 | 词法、触发器、input/output 子句顺序、资源 ID、retain/each、side/slots、forget/if、红石 |
@@ -51,11 +51,12 @@ Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 
 | 文件 | 内容 |
 |---|---|
 | `language-reference.md` | 完整语言参考：正则表、with/without、except、round robin、empty slots、if 集合限定、红石细节 |
-| `templates.md` | 14 个可直接使用的程序（熔炉阵列、AE2 压印器、有机灌注器、聚变反应堆……） |
-| `troubleshooting.md` | 40 条常见错误对照、编译错误与磁盘警告速查、排错流程 |
+| `templates.md` | 15 个可直接使用的程序（熔炉阵列、总开关、AE2 压印器、有机灌注器、聚变反应堆……），带场景索引 |
+| `troubleshooting.md` | 43 条常见错误对照、编译错误与磁盘警告速查、排错流程 |
 | `efficiency.md` | 输出口数量规则、机器选型实测数据、降低卡顿的手段 |
 | `advanced-patterns.md` | 进阶模式：计数寄存器、状态机、多段加工链、AE 样板供应器按槽位分发、防满仓卡死、红石时钟提速、自循环增产、蓄能放电、事件驱动、用容器 + 比较器控制红石电路 |
-| `items-and-tools.md` | 物品与方块、标签枪与网络工具操作、编辑器快捷键 |
+| `items-and-tools.md` | 物品与方块、标签枪与网络工具操作、编辑器快捷键、搭建小技巧 |
+| `mod-notes.md` | 模组适配经验：Mekanism、AE2、GregTech CEu、神秘农业、资源蜜蜂、热力、仪式类模组 |
 | `config-and-versions.md` | 服务器配置与命令、版本差异、资料来源与已知出入 |
 
 ## 安装
@@ -114,6 +115,7 @@ Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 
 │           ├── efficiency.md
 │           ├── advanced-patterns.md
 │           ├── items-and-tools.md
+│           ├── mod-notes.md
 │           └── config-and-versions.md
 ├── scripts/
 │   └── validate_skill.py         # 语法与结构校验
@@ -125,7 +127,7 @@ Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 
 ## 致谢
 
 - [TeamDman/SuperFactoryManager](https://github.com/TeamDman/SuperFactoryManager)——模组本体、语法文件与官方示例
-- 社区玩家分享的效率测试数据与工厂程序
+- 社区玩家分享的效率测试数据、工厂程序与模组适配经验（Skill 中的示例均为参考思路后重新编写）
 
 ## 许可证
 

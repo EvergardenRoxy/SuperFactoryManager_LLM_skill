@@ -3,6 +3,8 @@
 > SKILL.md 第 4 节是速查版；本文件是完整版，含全部子句细节、语义对照表与示例。
 > 记号：`[ ]` 可选；`< >` 必填；`*` 可重复（逗号分隔）；`|` 二选一。
 
+**目录**：词法规则 · 程序结构 · 触发器 · input / output 总语法 · 资源 ID（resourceid） · 数量（number）、保留（retain）、each · with / without（按 tag 过滤，4.19.0+；`without` 4.20.0+ 才可靠） · except（排除） · 标签访问：each、round robin、side、slots、empty slots · forget（遗忘输入） · if / else if / else · 红石
+
 ## 词法规则
 
 - **关键字不区分大小写**：`EVERY` = `every`。资源 ID 的大写在解析时会被转成小写，建议一律写小写。
@@ -15,7 +17,7 @@
   - 含中文或其他非 ASCII 字符：`"有机灌注器"`
   - 含空格、连字符、点、斜杠等：`"storage a"`、`"my-chest"`
   - 以数字开头：`"1号箱"`
-  - 与关键字同名的标签：如 `input`、`output`、`from`、`to`、`end`、`do`、`if`、`then`、`else`、`has`、`each`、`in`、`by`、`side`、`slot(s)`、`north/east/south/west`、`name`、`every`、`plus`、`tag`、`with`、`without`、`except`、`retain`、`empty`、`round`、`robin`、`label`、`block`、`not/and/or`、`true/false`、`null`、`some/one/lone/overall`、`tick/ticks`、`pulse`、`by`、`gt/lt/eq/le/ge` 等。**拿不准就加引号，加引号永远安全。**
+  - 与关键字同名的标签：如 `input`、`output`、`from`、`to`、`end`、`do`、`if`、`then`、`else`、`has`、`each`、`in`、`by`、`side`、`slot(s)`、`north/east/south/west`、`name`、`every`、`plus`、`tag`、`with`、`without`、`except`、`retain`、`empty`、`round`、`robin`、`label`、`block`、`not/and/or`、`true/false`、`null`、`some/one/lone/overall`、`tick/ticks`、`pulse`、`gt/lt/eq/le/ge` 等。**拿不准就加引号，加引号永远安全。**
   - 可以不加引号的"看着像关键字"的词：`top bottom left right front back redstone global second seconds`（4.16.0 起 `redstone` 可作标签与资源名）。
 - **`*` 通配**：不加引号时 `*` 被替换为 `.*`（`*_ingot`、`*seed*`）；**加引号时是纯正则，必须自己写 `.*`**（`".*_ingot"`）。
 - **标签长度**：最大 256（4.22.0 起，之前 80）。
@@ -170,7 +172,7 @@ output to b
 | `\d` | `"rocket_t\d"` | rocket_t1 |
 
 > ⚠ **不要用 `"[^(iron_ingot)].*"` 来"排除铁锭"**：`[^...]` 是"排除这些**字符**开头"，会误排除以 i/r/o/n/_/g/t 开头的所有物品。要排除某物，用 `except iron_ingot`（见下方"except"一节）或 `"(?!iron_ingot$).+"`。
-> 正则里**不要出现 `:`**（`:` 是资源 ID 的段分隔符）。需要 `(?:...)` 时用 `(...)` 代替。
+> 引号里的 `:` 是资源 ID 的**段分隔符**：`"mysticalagriculture:.*_essence"` = 命名空间 mysticalagriculture 下、名称匹配 `.*_essence` 的物品，这是合法写法。但正则语法本身不能用 `:`，需要 `(?:...)` 时用 `(...)` 代替。
 
 获取容器里真实存在的 resourceid：用网络工具、Ctrl+I，或光标移到该处按 Ctrl+Space。
 
