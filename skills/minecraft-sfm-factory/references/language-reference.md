@@ -3,6 +3,8 @@
 > SKILL.md 第 4 节是速查版；本文件是完整版，含全部子句细节、语义对照表与示例。
 > 记号：`[ ]` 可选；`< >` 必填；`*` 可重复（逗号分隔）；`|` 二选一。
 
+**目录**：词法规则 · 程序结构 · 触发器 · input / output 总语法 · 资源 ID（resourceid） · 数量（number）、保留（retain）、each · with / without（按 tag 过滤，4.19.0+；`without` 4.20.0+ 才可靠） · except（排除） · 标签访问：each、round robin、side、slots、empty slots · forget（遗忘输入） · if / else if / else · 红石
+
 ## 词法规则
 
 - **关键字不区分大小写**：`EVERY` = `every`。资源 ID 的大写在解析时会被转成小写，建议一律写小写。
@@ -15,7 +17,7 @@
   - 含中文或其他非 ASCII 字符：`"有机灌注器"`
   - 含空格、连字符、点、斜杠等：`"storage a"`、`"my-chest"`
   - 以数字开头：`"1号箱"`
-  - 与关键字同名的标签：如 `input`、`output`、`from`、`to`、`end`、`do`、`if`、`then`、`else`、`has`、`each`、`in`、`by`、`side`、`slot(s)`、`north/east/south/west`、`name`、`every`、`plus`、`tag`、`with`、`without`、`except`、`retain`、`empty`、`round`、`robin`、`label`、`block`、`not/and/or`、`true/false`、`null`、`some/one/lone/overall`、`tick/ticks`、`pulse`、`by`、`gt/lt/eq/le/ge` 等。**拿不准就加引号，加引号永远安全。**
+  - 与关键字同名的标签：如 `input`、`output`、`from`、`to`、`end`、`do`、`if`、`then`、`else`、`has`、`each`、`in`、`by`、`side`、`slot(s)`、`north/east/south/west`、`name`、`every`、`plus`、`tag`、`with`、`without`、`except`、`retain`、`empty`、`round`、`robin`、`label`、`block`、`not/and/or`、`true/false`、`null`、`some/one/lone/overall`、`tick/ticks`、`pulse`、`gt/lt/eq/le/ge` 等。**拿不准就加引号，加引号永远安全。**
   - 可以不加引号的"看着像关键字"的词：`top bottom left right front back redstone global second seconds`（4.16.0 起 `redstone` 可作标签与资源名）。
 - **`*` 通配**：不加引号时 `*` 被替换为 `.*`（`*_ingot`、`*seed*`）；**加引号时是纯正则，必须自己写 `.*`**（`".*_ingot"`）。
 - **标签长度**：最大 256（4.22.0 起，之前 80）。
@@ -130,7 +132,7 @@ end
 | `forge_energy` | Forge 能量（FE） | `fe`、`rf`、`energy`、`power` | 默认只允许它做 1 刻触发器 |
 | `mekanism_energy` | 通用机械能量，单次传输上限 MAX_LONG | | 仅 MC 1.19.2 版本；需 Mekanism |
 | `chemical` | 通用机械化学品 | `gas`（气体）、`infusion`（灌注）、`slurry`（浆液）、`pigment`（颜料） | `chemical` 这个名字需 MC ≥ 1.21.1，其他版本用别名；需 Mekanism |
-| `redstone` | 红石信号（世界方块**只读**）/ 实验性缓冲器里的计数 | | 版本存疑，见下方"红石"一节 |
+| `redstone` | 红石信号（世界方块**只读**）/ 实验性缓冲器里的计数 | | 4.27.0+，见下方"红石"一节 |
 
 **⚠ 高频错误**：
 
@@ -170,7 +172,7 @@ output to b
 | `\d` | `"rocket_t\d"` | rocket_t1 |
 
 > ⚠ **不要用 `"[^(iron_ingot)].*"` 来"排除铁锭"**：`[^...]` 是"排除这些**字符**开头"，会误排除以 i/r/o/n/_/g/t 开头的所有物品。要排除某物，用 `except iron_ingot`（见下方"except"一节）或 `"(?!iron_ingot$).+"`。
-> 正则里**不要出现 `:`**（`:` 是资源 ID 的段分隔符）。需要 `(?:...)` 时用 `(...)` 代替。
+> 引号里的 `:` 是资源 ID 的**段分隔符**：`"mysticalagriculture:.*_essence"` = 命名空间 mysticalagriculture 下、名称匹配 `.*_essence` 的物品，这是合法写法。但正则语法本身不能用 `:`，需要 `(?:...)` 时用 `(...)` 代替。
 
 获取容器里真实存在的 resourceid：用网络工具、Ctrl+I，或光标移到该处按 Ctrl+Space。
 
@@ -464,13 +466,14 @@ end
 
 | 写法 | 含义 | 版本 |
 |---|---|---|
-| `every redstone pulse do … end` | 红石脉冲触发器（管理器收到脉冲） | 长期支持 |
+| `every redstone pulse do … end` | 红石脉冲触发器（管理器收到脉冲）；不受最小间隔限制 | 长期支持 |
 | `if redstone [<比较符> <数>] then` | 判断**管理器自身**收到的红石强度 | 长期支持 |
-| `if abc [<面> side] has <比较符> <数> redstone:: then` | 读取**被标签方块**发出的红石信号（杠杆、比较器、红石块等），只读 | 版本存疑（见下） |
+| `if abc [<面> side] has <比较符> <数> redstone:: then` | 读取**被标签方块**发出的红石信号（杠杆、比较器、红石块等），只读 | 4.27.0+ |
 | `redstone`（物品）| 红石粉**物品**，与上面完全无关 | |
 
 - 物品红石粉：`input redstone from a`（4.14.0+ 不加引号也可），或更稳妥地写 `item:minecraft:redstone` / `"minecraft:redstone"`。
 - `redstone::`（红石信号资源）：读取的是**方块发出的弱信号 0–15**，不是输入进来的信号；不加面时取六个面的最强值；加 `east side` 则取该面。它**只读**，不能 `output` 到世界方块里。
 - 实验性"缓冲器"（`sfm:buffer`，开发期方块）可存红石计数，用 `input 1 redstone:: from donor` / `output redstone:: to counter` 搬运，比较器读数为 `min(存量, 15)`。普通玩家基本用不到。
-- **版本存疑**：用户提供的资料标注 `redstone` 资源类型"≥4.27.0"；仓库当前开发线（4.35.0 PRE，MC 1.19.2 分支）的更新日志把"标签红石读取"列在 4.35.0 PRE。**无法确定用户版本是否支持。** 做法：让用户先写一行 `if abc has > 0 redstone:: then output to b end` 测试，编译报 `unknown resource type` 就换成 `if redstone` 或让用户升级。
+- 现代版本均支持以上红石功能，**不需要先询问用户版本**；只有用户明确使用很旧的版本（< 4.27.0）且编译报 `unknown resource type "redstone"` 时，才改用 `if redstone` 或建议升级。
+- 用红石时钟驱动 `every redstone pulse` 可以突破 20 刻的最小间隔，但频率越高开销越大，见 `advanced-patterns.md`"红石时钟提速"。
 - 隧道式管理器**不传红石**。
