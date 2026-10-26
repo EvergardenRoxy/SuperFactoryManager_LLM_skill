@@ -54,7 +54,7 @@ Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 
 | `language-reference.md` | 完整语言参考：正则表、with/without、except、round robin、empty slots、if 集合限定、红石细节 |
 | `templates.md` | 15 个可直接使用的程序（熔炉阵列、总开关、AE2 压印器、有机灌注器、聚变反应堆……），带场景索引 |
 | `troubleshooting.md` | 44 条常见错误对照、编译错误与磁盘警告速查、排错流程 |
-| `efficiency.md` | 输出口数量规则、机器选型实测数据、降低卡顿的手段 |
+| `efficiency.md` | 接收容量与吞吐、机器原生锁槽/缓冲、社区测量的适用范围、降低卡顿的手段 |
 | `advanced-patterns.md` | 进阶模式：计数寄存器、状态机、多段加工链、AE 样板供应器按槽位分发、防满仓卡死、红石时钟提速、自循环增产、蓄能放电、事件驱动、用容器 + 比较器控制红石电路 |
 | `items-and-tools.md` | 物品与方块、标签枪与网络工具操作、编辑器快捷键、搭建小技巧 |
 | `mod-notes.md` | 模组适配经验：Mekanism、AE2、GregTech CEu、神秘农业、资源蜜蜂、热力、仪式类模组 |
@@ -97,7 +97,7 @@ Skill 采用**渐进式加载**：触发时只加载精简的核心文件（约 
 ## 准确性说明
 
 - Skill 中全部 `sfml` 代码块均已用 [`scripts/validate_skill.py`](scripts/validate_skill.py) 依据官方 ANTLR 语法文件 [`SFML.g4`](https://github.com/TeamDman/SuperFactoryManager/blob/HEAD/platform/minecraft/src/main/antlr/sfml/SFML.g4) 生成的解析器逐一校验通过。
-- 语法校验只能保证"能编译"，不能保证在游戏中的行为。涉及机器朝向与侧面配置、槽位编号、版本相关特性时，Skill 会引导用户在游戏内实测。
+- 语法校验只证明通过 ANTLR 解析；最小间隔、资源类型、正则等仍需游戏内编译检查，机器行为仍需游戏内验证。涉及机器朝向与侧面配置、槽位编号、版本相关特性时，Skill 会引导用户在游戏内实测。
 - **不凭记忆编造配方和资源 ID**：目标产物或配方链不明确时，Skill 会先提问确认（以你游戏中的 JEI/EMI 为准），确认后才生成代码；你也可以明确说"直接生成"，此时未核实的内容会被标注出来。
 - SFM 在大批量物流时自身开销较大。Skill 会优先给出最简单的写法；程序用到状态机、高频红石时钟、大阵列 `each` 等复杂结构时，会附带性能提示。
 - 与 DeepWiki、旧文档等资料的已知出入见 `references/config-and-versions.md` 的"资料来源与已知出入"。

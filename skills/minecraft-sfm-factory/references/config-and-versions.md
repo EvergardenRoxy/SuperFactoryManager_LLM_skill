@@ -71,3 +71,28 @@
 5. `redstone::`（读取方块红石信号）：社区资料与维护者确认为 4.27.0 起可用，现代版本直接使用即可；开发线 4.35.0 PRE 新增的是实验性缓冲器计数，与普通玩家无关。
 6. 程序最大长度：更新日志写约 32,300，源码常量为 32,600；以"约 32,300"为安全线。
 7. 配置文件：用户资料写 `config/sfm-server.toml`（4.20.0+）或 `config/sfm-common.toml`；Forge 的**服务器配置通常在存档目录的 `serverconfig/` 里**。最稳妥的方式是用管理器界面的 View server config 或 `/sfm config` 命令定位。
+
+## 模组行为核对来源（2026-10-27）
+
+以下为接口/示例修正的核对基线，分支不是发布版本，不能替代用户整合包的配方。文件由维护者上游公开源码提供；发生差异时核对用户具体版本，不把本文当作覆盖所有版本的唯一事实。
+
+| 模组与分支 | 核对文件 |
+|---|---|
+| Mekanism 1.21.x | [mek_electro](https://github.com/mekanism/Mekanism/blob/1.21.x/src/datagen/main/java/mekanism/common/recipe/impl/SeparatingRecipeProvider.java)；[mek_input](https://github.com/mekanism/Mekanism/blob/1.21.x/src/main/java/mekanism/common/inventory/slot/InputInventorySlot.java)；[mek_fusion](https://github.com/mekanism/Mekanism/blob/1.21.x/src/generators/java/mekanism/generators/common/content/fusion/FusionReactorMultiblockData.java) |
+| AE2 1.21.1 | [ae_provider](https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/src/main/java/appeng/helpers/patternprovider/PatternProviderLogic.java)；[ae_base](https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/src/main/java/appeng/blockentity/AEBaseInvBlockEntity.java)；[ae2_inscriber_doc](https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/guidebook/items-blocks-machines/inscriber.md) |
+| ExtendedAE 1.21.1-neoforge | [ext_inscriber](https://github.com/GlodBlock/ExtendedAE/blob/1.21.1-neoforge/src/main/java/com/glodblock/github/extendedae/common/tileentities/TileExInscriber.java)；[ext_thread](https://github.com/GlodBlock/ExtendedAE/blob/1.21.1-neoforge/src/main/java/com/glodblock/github/extendedae/common/me/InscriberThread.java)；[ext_assembler](https://github.com/GlodBlock/ExtendedAE/blob/1.21.1-neoforge/src/main/java/com/glodblock/github/extendedae/common/tileentities/TileCrystalAssembler.java) |
+| AdvancedAE main | [adv_readme](https://github.com/pedroksl/AdvancedAE/blob/main/README.md) |
+| GTCEu Modern 1.20.1 | [gt_hatch](https://github.com/GregTechCEu/GregTech-Modern/blob/1.20.1/src/main/java/com/gregtechceu/gtceu/common/machine/multiblock/part/FluidHatchPartMachine.java) |
+| Mystical Agriculture 1.21 | [ma](https://github.com/BlakeBr0/MysticalAgriculture/blob/1.21/src/main/java/com/blakebr0/mysticalagriculture/tileentity/InfusionAltarTileEntity.java)；[ma_seeds](https://github.com/BlakeBr0/MysticalAgriculture/blob/1.21/src/main/resources/data/c/tags/item/seeds.json) |
+| Productive Bees dev-1.21.0 | [bees_items](https://github.com/JDKDigital/productive-bees/blob/dev-1.21.0/src/main/java/cy/jdkdigital/productivebees/init/ModItems.java)；[bees_recipe](https://github.com/JDKDigital/productive-bees/blob/dev-1.21.0/src/main/java/cy/jdkdigital/productivebees/common/recipe/ConfigurableHoneycombRecipe.java)；[bees_centrifuge](https://github.com/JDKDigital/productive-bees/blob/dev-1.21.0/src/main/java/cy/jdkdigital/productivebees/common/block/entity/CentrifugeBlockEntity.java)；[bees_power](https://github.com/JDKDigital/productive-bees/blob/dev-1.21.0/src/main/java/cy/jdkdigital/productivebees/common/block/entity/PoweredCentrifugeBlockEntity.java) |
+| Thermal 1.20.x | [thermal](https://github.com/CoFH/ThermalExpansion/blob/1.20.x/src/main/java/cofh/thermal/expansion/common/block/entity/machine/MachineInsolatorBlockEntity.java) |
+| MI 1.21.x | [mi_energy](https://github.com/AztechMC/Modern-Industrialization/blob/1.21.x/src/main/java/aztech/modern_industrialization/api/energy/EnergyApi.java)；[mi_config](https://github.com/AztechMC/Modern-Industrialization/blob/1.21.x/src/main/java/aztech/modern_industrialization/config/MIStartupConfig.java)；[mi_slots_doc](https://github.com/AztechMC/Modern-Industrialization/blob/1.21.x/src/main/resources/assets/modern_industrialization/mi_guidebook/steam_age/steam_machines.md) |
+| Occultism version/1.21.1 | [occ_gold_121](https://github.com/klikli-dev/occultism/blob/version/1.21.1/src/main/java/com/klikli_dev/occultism/common/blockentity/GoldenSacrificialBowlBlockEntity.java) |
+| Ars Nouveau 1.21.x | [ars_imb_121](https://github.com/baileyholl/Ars-Nouveau/blob/1.21.x/src/main/java/com/hollingsworth/arsnouveau/common/block/tile/ImbuementTile.java) |
+| Oritech 1.21 | [ori_doc](https://github.com/Rearth/Oritech/blob/1.21/wiki/docs/particle_accelerator.mdx)；[ori_sensor_doc](https://github.com/Rearth/Oritech/blob/1.21/wiki/content/particle/accelerator_sensor.mdx)；[ori_ctrl_doc](https://github.com/Rearth/Oritech/blob/1.21/wiki/content/particle/accelerator_controller.mdx) |
+| Ex Deorum 1.21.1 | [ex_dust](https://github.com/thedarkcolour/ExDeorum/blob/1.21.1/src/generated/resources/data/exdeorum/recipe/hammer/dust.json) |
+
+- Productive Bees 的丢流体结论限定提交 `656641c1054dde8aa8690a10e6bb07ff1e75da41`；升级后重新检查 `canProcessRecipe` 与 `completeRecipeProcessing`。
+- [Applied Mekanistics](https://github.com/AppliedEnergistics/Applied-Mekanistics/blob/dev/1.21.1/README.md) 提供 ME 化学品兼容层；[RS 外部存储说明](https://refinedmods.com/refined-storage/storage/external-storage.html) 的模式名称按 RS 版本核对。
+- 语法验证仅运行 ANTLR 解析，不执行 SFM 编译器的最小间隔、资源类型、正则及游戏能力检查。需要可复现语法基线时，运行 `python3 scripts/validate_skill.py --ref <上游提交 SHA>`；默认 HEAD 缓存不会自动追踪远程更新，更新基线时换 SHA 或清理对应缓存。
+- 本次修正未运行 Minecraft 集成测试。交付前至少验证：两批长耗时配方不混批、多工位齐料、目标满仓、供电断开、重载后恢复。组件过滤、面/槽号、脉冲周期、目标单次接收上限须游戏内确认。
