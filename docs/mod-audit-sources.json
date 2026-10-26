@@ -1,0 +1,211 @@
+{
+  "review_date": "2026-10-27",
+  "repository_commit": "2ff5bc6c9b2d6f74de1ef068dd0f25472a33f133",
+  "sources": [
+    {
+      "key": "ma",
+      "url": "https://github.com/BlakeBr0/MysticalAgriculture/blob/1.21/src/main/java/com/blakebr0/mysticalagriculture/tileentity/InfusionAltarTileEntity.java",
+      "blob_sha": "b899aebd0ebbd369bcd79602cb5b8ac6636dc29f"
+    },
+    {
+      "key": "mek_fusion",
+      "url": "https://github.com/mekanism/Mekanism/blob/1.21.x/src/generators/java/mekanism/generators/common/content/fusion/FusionReactorMultiblockData.java",
+      "blob_sha": "08321fead77938b5a107afedf127875d720f964c"
+    },
+    {
+      "key": "mek_inventory",
+      "url": "https://github.com/mekanism/Mekanism/blob/1.21.x/src/main/java/mekanism/common/inventory/slot/BasicInventorySlot.java",
+      "blob_sha": "8e298f99eb8c1cd9dda5af331d6d4314c7b4ae85"
+    },
+    {
+      "key": "ae_inscriber",
+      "url": "https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/src/main/java/appeng/blockentity/misc/InscriberBlockEntity.java",
+      "blob_sha": "e9eb845dd435e05bcd37c952e2c42faf529d5867"
+    },
+    {
+      "key": "ae_provider",
+      "url": "https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/src/main/java/appeng/helpers/patternprovider/PatternProviderLogic.java",
+      "blob_sha": "8d7d20180d1c6252c2dcf26ff082184a1f3da631"
+    },
+    {
+      "key": "thermal",
+      "url": "https://github.com/CoFH/ThermalExpansion/blob/1.20.x/src/main/java/cofh/thermal/expansion/common/block/entity/machine/MachineInsolatorBlockEntity.java",
+      "blob_sha": "00b338a2193394bf414716999764d0d4e39752d1"
+    },
+    {
+      "key": "bees_recipe",
+      "url": "https://github.com/JDKDigital/productive-bees/blob/dev-1.21.0/src/main/java/cy/jdkdigital/productivebees/common/recipe/ConfigurableHoneycombRecipe.java",
+      "blob_sha": "f00d53887e14611389654e8784c10850c5f56763"
+    },
+    {
+      "key": "mek_input",
+      "url": "https://github.com/mekanism/Mekanism/blob/1.21.x/src/main/java/mekanism/common/inventory/slot/InputInventorySlot.java",
+      "blob_sha": "baa9347f193f4c124a9e675a74fc0fba5f2362c5"
+    },
+    {
+      "key": "mek_electro",
+      "url": "https://github.com/mekanism/Mekanism/blob/1.21.x/src/datagen/main/java/mekanism/common/recipe/impl/SeparatingRecipeProvider.java",
+      "blob_sha": "735eddda50d3c8d7a19d16884ccca2a903fbc907"
+    },
+    {
+      "key": "mek_tank",
+      "url": "https://github.com/mekanism/Mekanism/blob/1.21.x/src/main/java/mekanism/common/tier/ChemicalTankTier.java",
+      "blob_sha": "5e61d77590c88411cea87af9dc82699ca4581584"
+    },
+    {
+      "key": "bees_items",
+      "url": "https://github.com/JDKDigital/productive-bees/blob/dev-1.21.0/src/main/java/cy/jdkdigital/productivebees/init/ModItems.java",
+      "blob_sha": "cf75b2526c46fd96d485ad1cd2b0518d94af2746"
+    },
+    {
+      "key": "ext_assembler",
+      "url": "https://github.com/GlodBlock/ExtendedAE/blob/1.21.1-neoforge/src/main/java/com/glodblock/github/extendedae/common/tileentities/TileCrystalAssembler.java",
+      "blob_sha": "a14908e807bc4db967b96fb07a355065924e2aad"
+    },
+    {
+      "key": "gt_hatch",
+      "url": "https://github.com/GregTechCEu/GregTech-Modern/blob/1.20.1/src/main/java/com/gregtechceu/gtceu/common/machine/multiblock/part/FluidHatchPartMachine.java",
+      "blob_sha": "befbd76b79d2d9072030b2576f95251c83ddf546"
+    },
+    {
+      "key": "occ_bowl_121",
+      "url": "https://github.com/klikli-dev/occultism/blob/version/1.21.1/src/main/java/com/klikli_dev/occultism/common/blockentity/SacrificialBowlBlockEntity.java",
+      "blob_sha": "417ec7b17643a70b9bfc4ab464e1be93ada9a4a1"
+    },
+    {
+      "key": "occ_gold_121",
+      "url": "https://github.com/klikli-dev/occultism/blob/version/1.21.1/src/main/java/com/klikli_dev/occultism/common/blockentity/GoldenSacrificialBowlBlockEntity.java",
+      "blob_sha": "114f1d4eb24b192f9994a07fdedcb98236cce96c"
+    },
+    {
+      "key": "ars_imb_121",
+      "url": "https://github.com/baileyholl/Ars-Nouveau/blob/1.21.x/src/main/java/com/hollingsworth/arsnouveau/common/block/tile/ImbuementTile.java",
+      "blob_sha": "9f69bd2690b627bb35c8393e652c7de07b10bcd6"
+    },
+    {
+      "key": "mek_rate",
+      "url": "https://github.com/mekanism/Mekanism/blob/1.21.x/src/main/java/mekanism/common/capabilities/chemical/ChemicalTankChemicalTank.java",
+      "blob_sha": "2ffb55b541127f82c92c88dd4129e18adb8b06bd"
+    },
+    {
+      "key": "ae_base",
+      "url": "https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/src/main/java/appeng/blockentity/AEBaseInvBlockEntity.java",
+      "blob_sha": "318647bbb376749055cd8bb0cc283267cdce6740"
+    },
+    {
+      "key": "ae_pattern",
+      "url": "https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/src/main/java/appeng/crafting/pattern/AEProcessingPattern.java",
+      "blob_sha": "2d64e5ac2d66734aaa9f031da79ec762ab1846b7"
+    },
+    {
+      "key": "ori_doc",
+      "url": "https://github.com/Rearth/Oritech/blob/1.21/wiki/docs/particle_accelerator.mdx",
+      "blob_sha": "cd4a9905a896a7aa350d3a865e3ca0fafa6f3561"
+    },
+    {
+      "key": "mi_doc",
+      "url": "https://github.com/AztechMC/Modern-Industrialization/blob/1.21.x/src/main/resources/assets/modern_industrialization/mi_guidebook/electric_age/advanced_machines.md",
+      "blob_sha": "f9c8125721732148020aa583de92f4de0f3dbdbd"
+    },
+    {
+      "key": "mi_slots_doc",
+      "url": "https://github.com/AztechMC/Modern-Industrialization/blob/1.21.x/src/main/resources/assets/modern_industrialization/mi_guidebook/steam_age/steam_machines.md",
+      "blob_sha": "79027f121dcdd00e8f216083bec616da22111678"
+    },
+    {
+      "key": "ext_inscriber",
+      "url": "https://github.com/GlodBlock/ExtendedAE/blob/1.21.1-neoforge/src/main/java/com/glodblock/github/extendedae/common/tileentities/TileExInscriber.java",
+      "blob_sha": "b606cf845eb21d2bf8afd22374fb4bcaa4ca8393"
+    },
+    {
+      "key": "ext_thread",
+      "url": "https://github.com/GlodBlock/ExtendedAE/blob/1.21.1-neoforge/src/main/java/com/glodblock/github/extendedae/common/me/InscriberThread.java",
+      "blob_sha": "9498f55fcf1b8dba763aa6dfef0e3c66745d4116"
+    },
+    {
+      "key": "mi_basic",
+      "url": "https://github.com/AztechMC/Modern-Industrialization/blob/1.21.x/src/main/resources/assets/modern_industrialization/mi_guidebook/electric_age/basic_machines.md",
+      "blob_sha": "53962bdf0b58d2a4734a34633eb5da65ba35b1ad"
+    },
+    {
+      "key": "ori_ctrl_doc",
+      "url": "https://github.com/Rearth/Oritech/blob/1.21/wiki/content/particle/accelerator_controller.mdx",
+      "blob_sha": "1dab31e0bcb689a90f4b761bd982bc0da7f75190"
+    },
+    {
+      "key": "ori_sensor_doc",
+      "url": "https://github.com/Rearth/Oritech/blob/1.21/wiki/content/particle/accelerator_sensor.mdx",
+      "blob_sha": "e71256827b5273ecff8903c26a083eab6dbe9bbd"
+    },
+    {
+      "key": "ae_storage_doc",
+      "url": "https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/guidebook/items-blocks-machines/storage_bus.md",
+      "blob_sha": "40cd64850e77a51089e59acf16672e84cd1513bf"
+    },
+    {
+      "key": "mi_energy",
+      "url": "https://github.com/AztechMC/Modern-Industrialization/blob/1.21.x/src/main/java/aztech/modern_industrialization/api/energy/EnergyApi.java",
+      "blob_sha": "cfad2e154bbf11de78d82ef8351c949bd32351fa"
+    },
+    {
+      "key": "mi_energycomp",
+      "url": "https://github.com/AztechMC/Modern-Industrialization/blob/1.21.x/src/main/java/aztech/modern_industrialization/machines/components/EnergyComponent.java",
+      "blob_sha": "dc772a0315f7f5b52b674b2832fc7e425e9235da"
+    },
+    {
+      "key": "ars_api",
+      "url": "https://github.com/baileyholl/Ars-Nouveau/blob/1.21.x/src/main/java/com/hollingsworth/arsnouveau/api/imbuement_chamber/IImbuementRecipe.java",
+      "blob_sha": "5d394aaf56ce562922e0765d9997e39dedcd0877"
+    },
+    {
+      "key": "mi_config",
+      "url": "https://github.com/AztechMC/Modern-Industrialization/blob/1.21.x/src/main/java/aztech/modern_industrialization/config/MIStartupConfig.java",
+      "blob_sha": "79dcf6838037dd2a21b2a331eacb98025fb9dfb3"
+    },
+    {
+      "key": "ae2_inscriber_doc",
+      "url": "https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/guidebook/items-blocks-machines/inscriber.md",
+      "blob_sha": "0cdb31cbaef009b75af7de02e0e2b1f53243bd87"
+    },
+    {
+      "key": "sfm_item",
+      "url": "https://github.com/TeamDman/SuperFactoryManager/blob/main/platform/minecraft/src/main/java/ca/teamdman/sfm/common/resourcetype/ItemResourceType.java",
+      "blob_sha": "b927f248e76bdff7d3db4354d3f495a7010b1347"
+    },
+    {
+      "key": "bees_centrifuge",
+      "url": "https://github.com/JDKDigital/productive-bees/blob/dev-1.21.0/src/main/java/cy/jdkdigital/productivebees/common/block/entity/CentrifugeBlockEntity.java",
+      "blob_sha": "234c69760b7929e924e30884f48b1ca553cb19a3"
+    },
+    {
+      "key": "bees_power",
+      "url": "https://github.com/JDKDigital/productive-bees/blob/dev-1.21.0/src/main/java/cy/jdkdigital/productivebees/common/block/entity/PoweredCentrifugeBlockEntity.java",
+      "blob_sha": "eef8044fe2769987dc93cc4e6e12c7217fffc5ec"
+    },
+    {
+      "key": "sfm_reg",
+      "url": "https://github.com/TeamDman/SuperFactoryManager/blob/main/platform/minecraft/src/main/java/ca/teamdman/sfm/common/resourcetype/RegistryBackedResourceType.java",
+      "blob_sha": "13c68de02bbd5ad4653a0b5c0cedf84d0c96332f"
+    },
+    {
+      "key": "ex_dust",
+      "url": "https://github.com/thedarkcolour/ExDeorum/blob/1.21.1/src/generated/resources/data/exdeorum/recipe/hammer/dust.json",
+      "blob_sha": "fa8c468b496d9f77be4e0039046bd13213e489a1"
+    },
+    {
+      "key": "ma_seeds",
+      "url": "https://github.com/BlakeBr0/MysticalAgriculture/blob/1.21/src/main/resources/data/c/tags/item/seeds.json",
+      "blob_sha": "674d59f743ee78d678f30ee8be29ea714be512c6"
+    },
+    {
+      "key": "ma_tags2",
+      "url": "https://github.com/BlakeBr0/MysticalAgriculture/blob/1.21/src/main/java/com/blakebr0/mysticalagriculture/data/generator/ItemTagsJsonGenerator.java",
+      "blob_sha": "666a22e90f7c7ea44d8598ca06c197eb8c46fa48"
+    },
+    {
+      "key": "adv_readme",
+      "url": "https://github.com/pedroksl/AdvancedAE/blob/main/README.md",
+      "blob_sha": "79bc0b7187a2d495dfff06d4bee9485053472cff"
+    }
+  ]
+}
