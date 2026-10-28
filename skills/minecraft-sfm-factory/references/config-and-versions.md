@@ -1,82 +1,90 @@
-# 配置、命令、版本差异与资料来源
+# Configuration, commands, versions, and sources
 
-> 何时读：用户问服务器配置、`/sfm` 命令、某个特性从哪个版本开始支持，或资料之间说法冲突时。
+Read this for server settings, `/sfm` commands, feature availability, or conflicting documentation.
 
-## 配置与命令
+## Server configuration
 
-### 服务器配置（`sfm-server.toml`；也可在管理器界面左下角点 View server config 查看）
+Use **View server config** in the manager GUI or `/sfm config` to find the active configuration. The file is normally `sfm-server.toml`; Forge server configs are commonly under the world's `serverconfig/` directory. Do not assume a global `config/` path applies to every version.
 
-| 选项 | 默认 | 说明 |
+| Setting | Default | Purpose |
 |---|---|---|
-| `disableProgramExecution` | `false` | 紧急开关：禁止所有管理器编译和运行（游戏被 SFM 卡崩时用） |
-| `logResourceLossToConsole` | `true` | 资源被销毁/丢失时记录到控制台 |
-| `timerTriggerMinimumIntervalInTicks` | `20` | 触发器最小间隔（刻） |
-| `timerTriggerMinimumIntervalInTicksWhenOnlyForgeEnergyIOStatementsPresent` | `1` | 仅能量 I/O 的触发器最小间隔 |
-| `maxIfStatementsInTriggerBeforeSimulationIsntAllowed` | `10` | 一个触发器里 if 的数量超过它就不做 2^n 模拟检查 |
-| `maxDiskProblems` | `10` | 磁盘最多保留的错误/警告数 |
-| `disallowedResourceTypesForTransfer` | 空 | 禁止传输的资源类型（整合包作者用） |
-| `levelsToShards` | `JustOne` | 铁砧"附魔书→经验碎片"的转换策略（`JustOne`/`EachOne`/`SumLevels`/`SumLevelsScaledExponentially`） |
+| `disableProgramExecution` | `false` | Emergency switch preventing all managers from compiling and running programs |
+| `logResourceLossToConsole` | `true` | Log detected resource loss to the console |
+| `timerTriggerMinimumIntervalInTicks` | `20` | Ordinary timer minimum in ticks |
+| `timerTriggerMinimumIntervalInTicksWhenOnlyForgeEnergyIOStatementsPresent` | `1` | Minimum for supported energy-only I/O |
+| `maxIfStatementsInTriggerBeforeSimulationIsntAllowed` | `10` | Above this count, skip the compiler's exponential branch-simulation check |
+| `maxDiskProblems` | `10` | Maximum diagnostics annotated on a disk |
+| `disallowedResourceTypesForTransfer` | Empty list | Resource types the server forbids transferring |
+| `levelsToShards` | `JustOne` | Enchanted-book-to-Experience-Shard policy for anvil processing: `JustOne`, `EachOne`, `SumLevels`, or `SumLevelsScaledExponentially` |
 
-改配置后程序缓存会被清空并重新编译。
+Loading/reloading server configuration clears the program-build cache and causes managers to rebuild their programs.
 
-### 命令
+## Commands
 
-| 命令 | 权限 | 作用 |
+Permission levels below follow the checked upstream command registration; servers may impose additional restrictions.
+
+| Command | Permission | Purpose |
 |---|---|---|
-| `/sfm config show <SERVER\|CLIENT>` | 所有人 | 显示配置 |
-| `/sfm config edit SERVER` | OP(4) | 编辑服务器配置 |
-| `/sfm config edit CLIENT` | 所有人 | 编辑客户端配置 |
-| `/sfm bust_cable_network_cache` | 所有人（4.16.0+） | 清空所有线缆网络缓存（管理器无故不工作时用） |
-| `/sfm bust_water_network_cache` | 所有人 | 清空水槽网络缓存 |
-| `/sfm show_bad_cable_cache_entries <方块>` | 管理员 | 在缓存里被判定为"坏"的位置放置指定方块以便可视化 |
-| `/sfm changelog` | 所有人 | 在游戏里打开更新日志 |
-| `/sfm kit [玩家]` | 管理员 | 给予默认 SFM 物品（管理器、磁盘、标签枪、网络工具） |
+| `/sfm config show <SERVER\|CLIENT>` | All players | Show configuration |
+| `/sfm config edit SERVER` | Level 4 | Edit server configuration |
+| `/sfm config edit CLIENT` | All players | Edit client configuration |
+| `/sfm bust_cable_network_cache` | All players, 4.16.0+ | Clear cable-network caches |
+| `/sfm bust_water_network_cache` | All players | Clear Water Tank network caches |
+| `/sfm show_bad_cable_cache_entries <block>` | Level 2 | Place a block at cached invalid positions for diagnosis; this changes the world |
+| `/sfm changelog` | All players | Open the changelog in game |
+| `/sfm kit [player]` | Level 2 | Give the standard SFM tools and blocks |
 
-## 版本差异速查
+## Feature availability
 
-| 版本 | 变化 |
+These are historical feature milestones, not a statement that every Minecraft build exposes every integration. Check the user's exact artifact when behavior differs.
+
+| SFM version | Relevant changes |
 |---|---|
-| 4.12.0 | 数量/保留可用 `each`；`except` 排除 |
-| 4.14.0 | `forget`；`round robin`；网络工具；`input redstone` 不加引号可用 |
-| 4.15.0 | `each` 作为 `every` 别名；`each side`；`fe::`/`rf::`/`energy::`/`power::` 别名；最小间隔可配置；仅能量可更快 |
-| 4.16.0 | `every tick do` 合法；`mekanism_energy`（MC1.19.2）；`redstone` 可作标签；`if x has eq 0` 可省略资源 |
-| 4.17.0 | 修复部分 forget 重置计数；加入警告系统；缓存失效修复 |
-| 4.19.0 | `with tag`；`gas::`/`infusion::` 等成为 `chemical::` 别名（1.21.1 构建） |
-| 4.20.0 | `without` 生效；`or` 连接资源；`each` 限制优化；精致线缆与伪装；`global` 与偏移计时；蓄水槽 2^n；程序长度约 32,300；`/sfm config`；`sfm-server.toml`；禁用资源类型配置 |
-| 4.21.0 | 智能补全（`\` 接受），左下角按钮打开编辑器配置 |
-| 4.22.0 | 修复 `retain`（#306 等）；修复 `SECOND`；标签最长 256 |
-| 4.24.0 | 修复秒级偏移未乘 20 |
-| 4.25.0 | `output to empty slots in …` |
-| 4.27.0 | 隧道式管理器；`slot` 单数；相对方向 `left/right/front/back`；`redstone::` 读取方块红石信号；管理器可操作自己；修复 forget 内存泄漏 |
-| 4.29.0 | 隧道线缆、坚固线缆；网络工具调谐；无法抽取槽位的警告 |
-| 4.34.0 | 精致线缆可含水 |
-| 4.35.0 PRE（开发线） | 实验性缓冲器红石计数；`OFFSET BY` 新式偏移；旧 `+` 偏移警告；Client Manager 等显示/通信功能（与工厂搬运无关，忽略） |
+| 4.12.0 | Per-resource quantity/retention `each`; `except` |
+| 4.14.0 | `forget`, round robin, Network Tool; bare `input redstone` |
+| 4.15.0 | `each` as an `every` synonym; `each side`; FE aliases; configurable minima and faster energy-only timers |
+| 4.16.0 | `every tick`; MC 1.19.2 `mekanism_energy`; redstone label support; omitted resource in `has` |
+| 4.17.0 | Forget-budget fixes, warnings, cache invalidation fixes |
+| 4.19.0 | Tag filters; unified-chemical aliases on MC 1.21.1 builds |
+| 4.20.0 | Reliable `without`, resource `or`, per-resource optimizations, Fancy Cables/facades, global/offset timing, exponential Water Tank scaling, approximately 32,300-character programs, `/sfm config`, server-config and disallowed-type settings |
+| 4.21.0 | Completion acceptance with `\`; editor configuration button |
+| 4.22.0 | Retention fixes, `second` fix, 256-character labels |
+| 4.24.0 | Seconds-based offset conversion fix |
+| 4.25.0 | `output to empty slots in ...` |
+| 4.27.0 | Tunnelled Factory Manager, singular `slot`, relative sides, labeled-block `redstone::`, manager self-access, forget leak fix |
+| 4.29.0 | Tunnelled/Tough Inventory Cables, Network Tool tuning, extraction diagnostics |
+| 4.34.0 | Waterlogging for Fancy Inventory Cables |
+| 4.35.0 PRE / development line | Experimental Resource Buffer redstone counts, explicit `OFFSET BY`, warnings for legacy offsets, Client Manager display/communication features |
 
-> 开发线语法里还有 `LET … BE …`、`EVERY FRAME …`、`CREATE INPUT`、`BROADCAST`、`RENDER IMAGE`、`INVOKE`、`JSON`、`WITH CAPABILITY`、`AS`：它们属于 Client Manager（客户端显示/收发）实验功能，**不用于工厂物流**。用户没明确要求时不要使用。
+Development grammar also contains declarations, `LET ... BE ...`, frame triggers, `CREATE INPUT`, `BROADCAST`, `RENDER IMAGE`, `INVOKE`, JSON expressions, capability selection, and bindings. These Client Manager extensions are outside this skill's factory-logistics scope. Do not conclude that ordinary logistics programs can use them as general-purpose variables or loops.
 
-## 资料来源与已知出入
+## Official references and source precedence
 
-**官方资源**
-- 仓库：`https://github.com/TeamDman/SuperFactoryManager`（语法文件 `platform/minecraft/src/main/antlr/sfml/SFML.g4`；示例 `examples/`；游戏内模板 `platform/minecraft/src/main/resources/assets/sfm/template_programs/`；更新日志 `…/template_programs/changelog.sfml`；`docs/REPORTING_ISSUES.md`；`docs/redstone-support.md`）
-- 问题追踪：`https://github.com/TeamDman/SuperFactoryManager/issues`
-- Discord：`https://discord.gg/5mbUY3mu6m`
-- CurseForge：Super Factory Manager；VSCode 语法高亮扩展：`TeamDman.super-factory-manager-language`
-- DeepWiki 索引：`https://deepwiki.com/TeamDman/SuperFactoryManager`（AI 生成，可能滞后，**与源码冲突时以源码/本文为准**）
+- [SuperFactoryManager repository](https://github.com/TeamDman/SuperFactoryManager)
+- [SFML grammar](https://github.com/TeamDman/SuperFactoryManager/blob/main/platform/minecraft/src/main/antlr/sfml/SFML.g4)
+- [Examples](https://github.com/TeamDman/SuperFactoryManager/tree/main/examples) and [in-game template programs/changelog](https://github.com/TeamDman/SuperFactoryManager/tree/main/platform/minecraft/src/main/resources/assets/sfm/template_programs)
+- [Issue-reporting guide](https://github.com/TeamDman/SuperFactoryManager/blob/main/docs/REPORTING_ISSUES.md), [redstone notes](https://github.com/TeamDman/SuperFactoryManager/blob/main/docs/redstone-support.md), and [issue tracker](https://github.com/TeamDman/SuperFactoryManager/issues)
+- [SFM Discord](https://discord.gg/5mbUY3mu6m); CurseForge listing: Super Factory Manager; VS Code extension: `TeamDman.super-factory-manager-language`
+- [DeepWiki](https://deepwiki.com/TeamDman/SuperFactoryManager) is AI-generated and may lag behind. Prefer matching-version source and in-game evidence when they conflict.
 
-**本文与零散资料之间已核对出的出入**（遇到时以本文为准）
-1. 旧文档/DeepWiki/部分示例注释写"物品默认命名空间是 minecraft:"。**新版已不是**：省略命名空间会匹配所有模组的同名物品（`stone` ≈ `*:stone`）；需要限定时写 `minecraft:stone`。
-2. 部分资料写"`empty slots in` 可用于 input"。**语法上只有 output 支持。**
-3. 旧示例里"`not`、`and`、`or` 优先级相同"。**语法文件里是 not > and > or**；仍建议加括号。
-4. 旧资料的正则示例 `"[^(iron_ingot)].*"` 用来"排除铁锭"是错的（见 `language-reference.md` 的"资源 ID"一节）。
-5. `redstone::`（读取方块红石信号）：社区资料与维护者确认为 4.27.0 起可用，现代版本直接使用即可；开发线 4.35.0 PRE 新增的是实验性缓冲器计数，与普通玩家无关。
-6. 程序最大长度：更新日志写约 32,300，源码常量为 32,600；以"约 32,300"为安全线。
-7. 配置文件：用户资料写 `config/sfm-server.toml`（4.20.0+）或 `config/sfm-common.toml`；Forge 的**服务器配置通常在存档目录的 `serverconfig/` 里**。最稳妥的方式是用管理器界面的 View server config 或 `/sfm config` 命令定位。
+SFM wording and syntax were rechecked on 2026-10-28 against commit [`e2ba833b2b235835d69475b641e24b22bfd9551a`](https://github.com/TeamDman/SuperFactoryManager/commit/e2ba833b2b235835d69475b641e24b22bfd9551a). Relevant files include `SFML.g4`, `SFMServerConfig.java`, `SFMCommand.java`, `BoolRedstone.java`, `RedstoneSignalCapabilityProvider.java`, `WaterTankBlockEntity.java`, English localization, and bundled templates under `platform/minecraft/`.
 
-## 模组行为核对来源（2026-10-27）
+### Known documentation discrepancies
 
-以下为接口/示例修正的核对基线，分支不是发布版本，不能替代用户整合包的配方。文件由维护者上游公开源码提供；发生差异时核对用户具体版本，不把本文当作覆盖所有版本的唯一事实。
+1. **Omitted namespace:** current `stone` matches that item name across namespaces. Older comments claiming an implicit `minecraft:` namespace do not describe this behavior.
+2. **Empty slots:** grammar supports this on output only. It skips all occupied slots, including partially filled stacks.
+3. **Boolean precedence:** grammar gives `not > and > or`; parenthesize combinations even if an old example says otherwise.
+4. **Regex exclusion:** `"[^(iron_ingot)].*"` is a negated character class, not an item exclusion. Use `except iron_ingot`.
+5. **Redstone versions:** ordinary labeled-block signal reads date from 4.27.0; experimental buffer counts are a separate development feature. At the checked commit, both manager `if redstone` and world-signal resource reads query current world state. Do not repeat older blanket claims that all redstone reads cache signal strength.
+6. **Program length:** changelog guidance is about 32,300 characters; the checked source constant is 32,600. Use the lower value as a conservative budget.
+7. **Water Tank scaling:** the exponential expression describes exposed amount/capacity in the checked implementation, not guaranteed throughput per tick. Actual output also depends on transfer calls and destination limits.
+8. **Native ejection limits:** direct capability access may bypass an ejection schedule; it does not bypass capability transfer limits or side restrictions.
 
-| 模组与分支 | 核对文件 |
+## Mod behavior audit sources
+
+The following sources were recorded in the 2026-10-27 interface audit. They describe branch implementations, not every release or modified pack. Preserve that scope when adapting examples; recheck the user's version if it differs.
+
+| Mod / checked branch | Source files |
 |---|---|
 | Mekanism 1.21.x | [mek_electro](https://github.com/mekanism/Mekanism/blob/1.21.x/src/datagen/main/java/mekanism/common/recipe/impl/SeparatingRecipeProvider.java)；[mek_input](https://github.com/mekanism/Mekanism/blob/1.21.x/src/main/java/mekanism/common/inventory/slot/InputInventorySlot.java)；[mek_fusion](https://github.com/mekanism/Mekanism/blob/1.21.x/src/generators/java/mekanism/generators/common/content/fusion/FusionReactorMultiblockData.java) |
 | AE2 1.21.1 | [ae_provider](https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/src/main/java/appeng/helpers/patternprovider/PatternProviderLogic.java)；[ae_base](https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/src/main/java/appeng/blockentity/AEBaseInvBlockEntity.java)；[ae2_inscriber_doc](https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/1.21.1/guidebook/items-blocks-machines/inscriber.md) |
@@ -92,7 +100,14 @@
 | Oritech 1.21 | [ori_doc](https://github.com/Rearth/Oritech/blob/1.21/wiki/docs/particle_accelerator.mdx)；[ori_sensor_doc](https://github.com/Rearth/Oritech/blob/1.21/wiki/content/particle/accelerator_sensor.mdx)；[ori_ctrl_doc](https://github.com/Rearth/Oritech/blob/1.21/wiki/content/particle/accelerator_controller.mdx) |
 | Ex Deorum 1.21.1 | [ex_dust](https://github.com/thedarkcolour/ExDeorum/blob/1.21.1/src/generated/resources/data/exdeorum/recipe/hammer/dust.json) |
 
-- Productive Bees 的丢流体结论限定提交 `656641c1054dde8aa8690a10e6bb07ff1e75da41`；升级后重新检查 `canProcessRecipe` 与 `completeRecipeProcessing`。
-- [Applied Mekanistics](https://github.com/AppliedEnergistics/Applied-Mekanistics/blob/dev/1.21.1/README.md) 提供 ME 化学品兼容层；[RS 外部存储说明](https://refinedmods.com/refined-storage/storage/external-storage.html) 的模式名称按 RS 版本核对。
-- 语法验证仅运行 ANTLR 解析，不执行 SFM 编译器的最小间隔、资源类型、正则及游戏能力检查。需要可复现语法基线时，运行 `python3 scripts/validate_skill.py --ref <上游提交 SHA>`；默认 HEAD 缓存不会自动追踪远程更新，更新基线时换 SHA 或清理对应缓存。
-- 本次修正未运行 Minecraft 集成测试。交付前至少验证：两批长耗时配方不混批、多工位齐料、目标满仓、供电断开、重载后恢复。组件过滤、面/槽号、脉冲周期、目标单次接收上限须游戏内确认。
+
+- Productive Bees fluid-loss behavior is pinned to commit `656641c1054dde8aa8690a10e6bb07ff1e75da41`. Recheck `canProcessRecipe` and `completeRecipeProcessing` after upgrades.
+- [Applied Mekanistics](https://github.com/AppliedEnergistics/Applied-Mekanistics/blob/dev/1.21.1/README.md) provides ME chemical integration. Check [RS External Storage documentation](https://refinedmods.com/refined-storage/storage/external-storage.html) against the installed RS version.
+
+## Validation scope
+
+Run `python3 scripts/validate_skill.py --ref <upstream commit SHA>` for a reproducible grammar check. It requires Java 11+, Python 3.8+, and `antlr4-python3-runtime==4.13.2`. Downloads are cached; the default mutable HEAD cache does not automatically track upstream updates. Change the SHA or clear the matching cache when updating the baseline.
+
+The validator runs ANTLR parsing and skill-structure checks. It does **not** run SFM compiler checks for timer minima, resource types, regex validity, or actual game capabilities. It also does not validate recipes, slot mappings, transfer acceptance, timing, or Minecraft behavior.
+
+Before deploying a production design, test one complete recipe, two consecutive long batches, parallel-station completeness, missing inputs, full targets, power loss, and reload recovery. Verify component filtering, side/slot mappings, pulse periods, and per-call transfer limits in game. No Minecraft integration test is claimed for these documents.

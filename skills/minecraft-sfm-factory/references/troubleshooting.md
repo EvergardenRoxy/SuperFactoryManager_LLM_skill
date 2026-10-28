@@ -1,106 +1,108 @@
-# 排错：常见错误、编译错误与磁盘警告
+# Troubleshooting programs and disk diagnostics
 
-> 何时读：用户贴出报错/警告原文、说"不工作/卡住/没反应"，或审查已有程序时。有报错原文先查"编译错误与磁盘警告速查"，否则按"排错流程"逐项检查。
+Read this for errors, warnings, stalled machines, or program reviews. Start with the exact diagnostic when available; otherwise follow the investigation sequence below. A syntax error, compiler validation failure, and valid program with incorrect behavior are different failure classes.
 
-## 常见错误对照表
+## Common mistakes
 
-下面每一行都是真实会发生的错误。**语法错** = 编译失败；**语义错** = 编译通过但行为不对。
-
-| # | 错误写法 | 类型 | 正确写法 / 说明 |
+| # | Mistake | Failure class | Correction or explanation |
 |---|---|---|---|
-| 1 | `input from a` 后面没有 `output` | 语义错 | 必须有 `output`，否则什么都不发生 |
-| 2 | `input fluid:: from a` 配 `output to b` | 语义错 | `output fluid:: to b top side`；类型要配对 |
-| 3 | `input fe:: from a` 没写面 | 语义错 | `input fe:: from a top side` |
-| 4 | `output to b top` | 语法错 | 必须以 `side` 结尾：`top side` |
-| 5 | `input stone from a slots 0 top side` | 语法错 | 面在前槽位在后：`from a top side slots 0` |
-| 6 | `input from a top side round robin by block` | 语法错 | `round robin` 必须在 side 之前：`from a round robin by block top side` |
-| 7 | `input from empty slots in a` | 语法错 | `empty slots in` 只用于 output |
-| 8 | `every 5 ticks do input … output … end` | 编译失败 | 最小间隔 20（只传能量可到 1） |
-| 9 | `every 0.5 seconds do` | 语法错 | 只能是非负整数 |
-| 10 | `fluid:water` | 语义错 | 被当作物品；写 `fluid::water` |
-| 11 | `output fe to b top side` | 语义错/报错 | 写 `fe::` |
-| 12 | `input from 有机灌注器` | 语法错 | 中文标签必须加引号：`"有机灌注器"` |
-| 13 | `input from east` | 语法错 | `east` 是关键字，标签名要加引号：`"east"` |
-| 14 | `input "*_ingot" from a` | 编译失败（正则非法） | 加引号用 `".*_ingot"`，或不加引号 `*_ingot` |
-| 15 | `output "[^(iron_ingot)].*" to c` | 语义错 | 会排除所有以 i/r/o/n/_/g/t 开头的物品；用 `output except iron_ingot to c` |
-| 16 | `input 5 stone, dirt from a` 以为是"5 个石头或泥土" | 语义错 | 实际 = 5 stone + 全部 dirt；用 `5 stone or dirt` |
-| 17 | `if a has 5 then` | 语法错 | 缺比较符：`if a has >= 5 then` |
-| 18 | `if a == 5` / `if a has != 5` | 语法错 | 用 `=`；不等于用 `not a has = 5` |
-| 19 | `elif`、`elseif`、`else if … end` 每支一个 `end` | 语法错 | 只有 `else if`，整条链一个 `end` |
-| 20 | `forget` 缺失，原料绕过机器直接到产物箱 | 语义错 | 见 SKILL.md 第 5 节三种方案 |
-| 21 | 触发器外直接写 `input/output` | 语法错 | 必须在 `every … do … end` 里 |
-| 22 | `name "x"` 写在触发器之后 | 语法错 | `name` 必须是第一行代码 |
-| 23 | `output 1000 to b` 想搬流体 | 语义错 | 默认是物品；写 `output 1000 fluid:: to b top side` |
-| 24 | `every 20+1 ticks offset by 2 ticks` | 编译失败 | `+` 偏移与 `OFFSET BY` 不能混用 |
-| 25 | `input from a iron_ingot`（资源写在标签后） | 语法错 | 资源写在 `from` 之前：`input iron_ingot from a` |
-| 26 | 期望 `output 1 to b` 给每个 b 一个 | 语义错 | 只会有一个 b 收到；要每个都收到写 `to each b` |
-| 27 | 期望 `input 5 from a` 每个 a 出 5 个 | 语义错 | 总共 5 个；每个出 5 个写 `from each a` |
-| 28 | 把 `redstone`（物品）和 `redstone::`（信号）混用 | 语义错 | 物品用 `item:minecraft:redstone` / `"minecraft:redstone"` |
-| 29 | `input 1k …` / `input 1,000 …` | 语义错（能编译！） | `1k` 被解析为"1 个名为 k 的物品"，`1,000` 被解析为两个限制；写 `1000` |
-| 30 | `fluid::`、`gas::` 在没装 Mekanism/对应模组时使用 | 编译失败 | `unknown resource type` |
-| 31 | 在 `has` 里用逗号列多个资源 | 语法错 | 用 `or`（4.20.0+） |
-| 32 | 程序超过 ~32,300 字符 | 无法保存 | 精简或拆分（减少重复 if 分支） |
-| 33 | 标签没推送到磁盘，或方块没接线缆 | 语义错 | 看磁盘警告：`undefined_label` / `disconnected_label` |
-| 34 | 两种同类型资源（如两种气体）分别送进同一机器的不同面，中间没 `forget` 且只写了 `gas::` | 语义错 | 第二个 output 会把第一种也送进去；两组之间 `forget`，或写精确资源 ID |
-| 35 | 用多个独立 `if` 写状态机，同一次执行里状态连跳 | 语义错 | `has` 读的是实时库存；改成 `if … else if … end` 链 |
-| 36 | 多产物机器未处理满仓：可能停机，也可能丢弃装不下的副产物 | 语义错 | 核对具体版本的满仓行为；每种产物有可用接收槽/罐，只有允许丢弃的副产物才进销毁出口 |
-| 37 | `if each "储罐" >= 1000 fluid:: then`（漏了 `has`）或用全角 `＞` | 语法错 | `if each "储罐" has >= 1000 fluid:: then`；比较符必须是半角 |
-| 38 | 为了"保险"到处用 `each side` 和每刻/高频触发 | 能运行但卡顿 | 写具体面、降低频率；见 `efficiency.md`"性能提示" |
-| 39 | 想按种类分拣同 ID、只靠 NBT/数据组件区分的物品（如 ATM10 资源蜜蜂蜜脾 `productivebees:configurable_honeycomb`、药水、附魔书） | SFM 做不到 | SFM 只认注册 ID 和 tag；先用能识别 NBT 的模组（AE2/RS 分区、NBT 过滤管道）分开，SFM 只负责运输 |
-| 40 | 自循环生产启动后卡死，各机器里都有一点原料但都不够开工 | 语义错 | 种子（启动物料）太少：至少覆盖所有机器 `retain` 的总量并留余量；并持续补充被产出的消耗 |
-| 41 | 多工位共用全部基座标签，仅增加 AE 样板倍数 | 语义错 | 总量正确不保证每工位齐料；独立缓存/基座/核心/供应器并让产物各自返回，或按材料角色分组后实测 |
-| 42 | 大型整合包里写 `fluid::sulfuric_acid`，结果把别的模组的同名流体送进只接受特定版本的机器 | 语义错 | 写上命名空间：`fluid:gtceu:sulfuric_acid` |
-| 43 | 程序正确但机器不开工：漏了编程电路、不消耗的催化剂、侧面配置或关闭自动弹出 | 搭建遗漏 | 交付时列出"一次性手动设置"；排错时先逐台检查 |
-| 44 | 磁盘警告 `Resource "x" was not found.`，或配方链根本走不通 | 臆造 ID / 配方 | ID 或配方凭记忆编写。让用户用 Ctrl+Space、JEI 核对；按 `recipe-learning.md` 重新确认配方链；尽量改用专用容器避开 ID |
+| 1 | `input from a` without a consuming output | Behavior | Input only registers a source; add an output |
+| 2 | `input fluid:: from a` followed by `output to b` | Type mismatch | Use matching fluid I/O and concrete sides |
+| 3 | `input fe:: from a` without a side on a restricted block | Capability access | Use a verified face such as `top side` |
+| 4 | `output to b top` | Syntax | Include `side`: `top side` |
+| 5 | `input stone from a slots 0 top side` | Syntax | Side before slots: `from a top side slots 0` |
+| 6 | `input from a top side round robin by block` | Syntax | Round robin precedes sides |
+| 7 | `input from empty slots in a` | Syntax | Empty-slot selection is output-only |
+| 8 | Item transfers in `every 5 ticks` under default settings | Compiler validation | Ordinary minimum is 20 ticks; supported energy-only I/O defaults to one |
+| 9 | `every 0.5 seconds do` | Syntax | Use integer periods; timer periods must be positive |
+| 10 | `fluid:water` | Wrong resource | This means an item in namespace fluid; use `fluid::water` |
+| 11 | `output fe to b top side` | Wrong resource | Use `fe::` for energy |
+| 12 | `input from my-chest` | Syntax | Quote punctuation: `input from "my-chest"` |
+| 13 | `input from east` | Syntax | Quote reserved-word labels: `"east"` |
+| 14 | `input "*_ingot" from a` | Regex validation | Use quoted `".*_ingot"` or bare `*_ingot` |
+| 15 | `"[^(iron_ingot)].*"` used to exclude iron ingots | Wrong filter | Negated character class; prefer `except iron_ingot` |
+| 16 | Reading `5 stone, dirt` as five stone-or-dirt items | Wrong budget | Commas separate limits; use `5 stone or dirt` on 4.20.0+ |
+| 17 | `if a has 5 then` | Syntax | Include comparison: `if a has >= 5 then` |
+| 18 | `if a == 5` or `if a has != 5` | Syntax | Use `has =`; negate with `not (a has = 5)` |
+| 19 | `elif`, `elseif`, or one `end` per else-if branch | Syntax | Use `else if`; one end closes the complete chain |
+| 20 | Feeding and collecting without isolating registered sources | Bypassed processing | Add `forget`, separate triggers, or verified disjoint filters; see SKILL.md section 5 |
+| 21 | Input/output outside a trigger | Syntax | Put logistics statements in `every … do … end` |
+| 22 | `name "x"` after a trigger | Syntax | Put the optional name before all triggers |
+| 23 | `output 1000 to b` intended to transfer fluid | Wrong resource | Use `output 1000 fluid:: to b top side` |
+| 24 | `every 20+1 ticks offset by 2 ticks` | Compiler validation | Choose legacy offset or explicit offset, not both |
+| 25 | `input from a iron_ingot` | Syntax | Resource precedes `from`: `input iron_ingot from a` |
+| 26 | Expecting `output N to b` to give N to every block | Wrong allocation | It shares N across the group and may split it. Use `to each b`; use round robin to select only one block |
+| 27 | Expecting `input 5 from a` to take five per block | Wrong allocation | Use `from each a` for a per-block budget |
+| 28 | Confusing redstone dust with `redstone::` signals | Wrong type | Use `item:minecraft:redstone` for dust |
+| 29 | Writing `1k` or `1,000` as a quantity | Misparsed/rejected | `1k` can mean one resource k; commas separate limits. Write `1000` |
+| 30 | Using a mod-specific resource type without its integration | Compiler validation | For example, `gas::` requires the appropriate Mekanism integration; check the installed build |
+| 31 | Comma-separated resources inside `has` | Syntax | Use resource `or` on 4.20.0+ |
+| 32 | Exceeding the disk's program length | Save limit | Keep below the conservative ~32,300-character budget; simplify or split |
+| 33 | Labels not pushed to the disk or targets disconnected | World setup | Assign and push labels; check the cable network and disk warnings |
+| 34 | Two chemicals enter different faces using only `gas::`, without isolation | Wrong routing | Clear registrations between routes or use exact chemical IDs on both input/output |
+| 35 | Independent state-transition conditions run several states at once | Control flow | `has` sees current inventory; use an `if … else if … end` chain |
+| 36 | Ignoring full-storage behavior | Stall or loss | Verify whether the machine stops or discards output; provide capacity and permitted overflow routes |
+| 37 | `if each tanks >= 1000 fluid:: then`, or a full-width comparison symbol | Syntax | Include `has`, a side where needed, and ASCII operators: `if each tanks top side has >= 1000 fluid:: then` |
+| 38 | Using `each side` and high-frequency triggers everywhere | Performance | Narrow sides, slots, resources, and frequency; read `efficiency.md` |
+| 39 | Sorting same-ID variants by NBT/components with registry filters | Capability limit | Separate with exact component-aware AE2/RS or other filtering first; SFM transport preserves components |
+| 40 | Feedback loop leaves every machine with an incomplete recipe | Allocation/startup | Provide enough startup material for complete recipes and reserve, and balance ongoing inputs/exports |
+| 41 | All stations share pedestal labels and only pattern quantities are multiplied | Incomplete batches | Use station-specific groups/providers or verified ingredient-role allocation; total quantity alone is insufficient |
+| 42 | `fluid::sulfuric_acid` selects another mod's similarly named fluid | Wrong namespace | Use the verified exact ID, such as `fluid:gtceu:sulfuric_acid` |
+| 43 | Correct routing but no recipe starts | Machine setup | Check circuits, catalysts, presses, power, side configuration, activation, and conflicting automatic output |
+| 44 | Unknown resource warnings or an impossible recipe chain | Unsupported data | Recheck JEI/EMI and Ctrl+Space; follow `recipe-learning.md`; replace unnecessary filters with dedicated sources |
 
-## 编译错误与磁盘警告速查
+For example, Productive Bees variants share `productivebees:configurable_honeycomb` and differ by component. A regex on that ID cannot separate them. For all rows above, “parses” does not mean “passes the game compiler” or “works in the world.”
 
-磁盘上的警告会在管理器界面显示；**警告按钮：点击可复制含警告的代码，Shift+点击尝试自动修复警告**。磁盘最多保留 10 条问题（配置 `maxDiskProblems`）。
+## Compiler errors
 
-### 编译错误
+Disk diagnostics appear in the manager GUI. Clicking the warning button copies annotated code; Shift+click attempts automatic fixes. Review the result. The default `maxDiskProblems` is ten, so an abbreviated list may hide additional issues.
 
-| 提示 | 含义与处理 |
+| Message | Meaning and action |
 |---|---|
-| `Failed to compile.` / `Failed to compile with N errors.` | 语法错误。逐行对照第 4、9 节；可能是缺 `end`、缺 `then`、`side` 拼写、关键字当标签 |
-| `Minimum trigger interval is N ticks.` | 间隔太小；改大，或确认触发器是否仅含能量传输 |
-| `Program references an unknown resource type "x"` | 类型名拼错或对应模组未装（如 `gas::` 需要 Mekanism） |
-| `Program has a malformed resource type "x"` | 资源**类型**必须是字面量，不能是通配或正则 |
-| `Program references a disallowed resource type "x"` | 服务器配置禁用了该类型 |
-| `Invalid resource identifier pattern …` | 正则非法；常见于加引号后写了裸 `*` |
-| `Label name cannot be longer than 256 characters.` | 标签名过长 |
-| `Interval exceeds supported tick count` / `Use either legacy + offset or OFFSET BY, not both` | 间隔过大 / 偏移写法混用 |
+| `Failed to compile.` / `Failed to compile with N errors.` | Inspect the reported lines for missing `end`/`then`, clause order, invalid tokens, and unquoted labels |
+| `Minimum trigger interval is N ticks.` | Increase the period or verify that the trigger contains only eligible energy I/O |
+| `Program references an unknown resource type "x"` | Misspelled type or unavailable integration |
+| `Program has a malformed resource type "x"` | Type must be literal, not wildcard or regex |
+| `Program references a disallowed resource type "x"` | Server configuration forbids it |
+| `Invalid resource identifier pattern …` | Invalid regex, commonly a bare `*` inside quotes |
+| `Label name cannot be longer than 256 characters.` | Shorten the label; older releases may have a lower limit |
+| `Interval exceeds supported tick count` | Period or converted time exceeds the supported range |
+| `Use either legacy + offset or OFFSET BY, not both` | Remove one offset syntax |
 
-### 警告（程序能运行，但可能不对）
+## Warnings
 
-| 警告 | 含义 | 怎么办 |
+A program may run despite warnings and still behave incorrectly.
+
+| Warning text or fragment | Meaning | Action |
 |---|---|---|
-| `Label "x" is assigned in the world … but not connected by cables.` | 标签方块没连线缆 | 补线缆；或用管理器界面"重建网络" |
-| `Label "x" is assigned … connected by cables but is not detected as a valid inventory.` | 方块有标签也连着线缆，但没有可用的物品/流体/能量能力 | 换对面；确认方块确实有存储能力 |
-| `Label "x" is assigned in the world but not defined in code.` | 世界里有标签，程序里没用 | 多余标签，可忽略或清理（标签枪 Prune） |
-| `Label "x" is used in code but not assigned in the world.` | 程序用了标签，但世界里没绑定（或没推送到磁盘） | 标签枪给方块贴标签，**右击管理器推送** |
-| `Statement … inputs "x" from "y" but no future output statement consume "x".` | 这个 input 没有后续 output 消费 | 补 output，或删掉多余 input |
-| `Statement … uses resource type "x" which has no matching input statement.` | output 的类型没有对应 input | 补对应类型的 input（如忘了 `input fluid::`） |
-| `Statement matches no slots` | 指定的 slots/side 在目标上没有槽位 | 检查槽位号、面 |
-| `No slots support extraction` / `No slots support insertion` | 该面/槽位不允许取出/放入 | 换面；检查机器的自动化配置 |
-| `Mekanism blocks are read-only from the null direction` | Mekanism 方块没写 side | 补 `top side` 等 |
-| `Mekanism block side config … doesn't agree with statement` | Mekanism 机器侧面配置与语句不符 | 用配置卡/配置器把对应面设为输入或输出 |
-| `EACH used without a pattern` | 用了数字后的 `each`，但资源没有通配 | `each` 只在资源是模式（`*_ingot`）时有意义 |
-| `Round robin by label should be used with more than one label` / `Round robin by block shouldn't be used with EACH` | round robin 用法不合理 | 改用 `retain`，或去掉 `each` |
-| `The legacy + interval offset is ambiguous; use OFFSET BY …` | 旧式 `+` 偏移含义不明（较新版本） | 改成 `OFFSET BY n ticks` |
-| `Resource "x" was not found.` | 资源 ID 在注册表里找不到 | 检查拼写、命名空间 |
-| `Too many conditions for simulation …` | if 太多，模拟检查被跳过 | 可忽略，或拆成多个触发器 |
+| `Label "x" is assigned in the world … but not connected by cables.` | Disconnected target | Connect cables or rebuild the network |
+| `… connected by cables but is not detected as a valid inventory.` | No usable capability found | Check face, resource type, and block support |
+| `Label "x" is assigned in the world but not defined in code.` | Unused mapping | Ignore if intentional or Prune it with the Label Gun |
+| `Label "x" is used in code but not assigned in the world.` | Missing mapping or push | Apply the label and right-click the manager to push |
+| `… inputs "x" from "y" but no future output statement consume "x".` | No consuming output | Add the matching output or remove the input |
+| `… resource type "x" which has no matching input statement.` | Output lacks a source of its type | Add the corresponding input before it |
+| `Statement matches no slots` | Invalid face/slot selection | Check automation mappings |
+| `No slots support extraction` / `No slots support insertion` | Operation rejected by capability | Change face/slot or machine configuration |
+| `Mekanism blocks are read-only from the null direction` | Missing usable side | Specify a configured concrete face |
+| `Mekanism block side config … doesn't agree with statement` | I/O settings conflict with program | Configure the appropriate resource type and face |
+| `EACH used without a pattern` | Per-resource each adds no useful split | Remove it or use a deliberate resource pattern |
+| `Round robin by label should be used with more than one label` | One-label rotation | Remove round robin or select multiple labels |
+| `Round robin by block shouldn't be used with EACH` | Conflicting allocation intent | Choose rotation or per-block distribution |
+| `The legacy + interval offset is ambiguous; use OFFSET BY …` | Newer build prefers explicit offset | Use the supported explicit form |
+| `Resource "x" was not found.` | No registry match | Check spelling, namespace, version, and actual IDs |
+| `Too many conditions for simulation …` | Compiler simulation skipped | Simplify or split if helpful; this does not itself prohibit execution |
 
-## 排错流程（"不工作"时按顺序检查）
+## Investigation sequence
 
-0. **需求本身是否超出 SFM 能力**（按 NBT 分拣、直接输出红石、自己合成等，见 SKILL.md 第 0 节表格）：是的话，再怎么改程序也没用，直接给替代方案。
-1. **看磁盘警告**（见上方"编译错误与磁盘警告速查"）。没有任何警告 ≠ 没问题，但有警告一定先处理。
-2. **标签**：是否已**推送**到磁盘？标签是否贴对了方块、对了面？（网络工具/标签枪渲染可视化）
-3. **线缆**：手持网络工具看管理器、线缆、标签是否在同一网络；方块是否**挨着线缆**；管理器界面点"重建线缆网络"；仍不行用 `/sfm bust_cable_network_cache`。
-4. **面与槽位**：用网络工具右击目标方块的某个面，看该面开放哪些能力；Ctrl+I 看槽位（注意 GUI 槽位 ≠ 自动化槽位）；Mekanism 机器检查侧面配置。
-5. **资源类型配对**：`input` 与 `output` 的 `resourceid` 类型是否一致；流体/能量/化学品是否写了 `::` 和 `side`。
-6. **触发器**：间隔是否合适？用 `global` 对齐？重新载入世界后内部时钟会随机初始化，相位会变。
-7. **时序**：是否需要 `forget`？是否被前面的 `input` 残留干扰？
-8. **数量限制与满仓**：`retain`/`number` 是否限制过严？目标是否已满？机器是否被某种没有出口的副产物（尤其流体、气体）堵住？
-9. **日志**：管理器界面的**日志(Logs)**屏，可选 OFF/TRACE/DEBUG/INFO/WARN/ERROR；TRACE/DEBUG 会在执行一次后自动关闭（防卡顿）。
-10. **已知问题**：管理器偶尔无故停止工作 → "重建线缆网络"按钮或 `/sfm bust_cable_network_cache`；对堆肥桶不写面输出会跳过可堆肥检查，等于把它变成垃圾桶。
-11. **提交 bug**：给出 Minecraft/加载器/SFM 版本、整合包、程序、标签与面、复现步骤、日志。官方问题追踪见 `config-and-versions.md` 的"资料来源"。
+0. **Check capability scope.** Component-based sorting, direct world redstone output, and crafting/player interaction may require another mechanism. See SKILL.md section 0 before attempting syntax changes.
+1. **Read disk diagnostics.** Address relevant errors and warnings first. A clean diagnostic list is not proof of correct behavior.
+2. **Check labels.** Were the right block positions labeled and pushed to the disk? Labels bind blocks, not faces. Use Label Gun rendering to inspect them.
+3. **Check connectivity.** Hold the Network Tool and confirm manager, cables, and targets form one network. Rebuild the cable network in the manager GUI; if needed, use `/sfm bust_cable_network_cache`.
+4. **Inspect capabilities and machine setup.** Verify sides, resource-specific I/O configuration, automation slots, activation, power type/voltage, circuits, catalysts, and presses. Ctrl+I GUI indices may differ from automation indices.
+5. **Pair resource types.** Both statements need the intended type; fluids, energy, and chemicals need explicit prefixes and usable sides.
+6. **Check trigger timing.** Respect configured minima, world/local clock choice, reload phase, and actual pulse periods. A held redstone signal is not repeated rising edges.
+7. **Inspect registered sources.** Identify missing `forget` boundaries and sources that can bypass processing or enter the wrong face.
+8. **Check budgets and storage.** Are quantities or retention targets too restrictive? Are receiving slots/tanks full or incompatible? Check byproducts for both stalls and silent loss.
+9. **Use logs and performance data.** The manager Logs screen provides OFF/TRACE/DEBUG/INFO/WARN/ERROR. Detailed logging can auto-disable after execution; collect a focused trace. Compare execution time in the performance graph.
+10. **Reduce to one machine and one batch.** Use a dedicated source, verified sides, and a simple input/output pair. Add filtering and array allocation only after that works. Older composter null-side behavior could bypass normal compost checks; use an explicit side and verify the installed version before moving valuable items.
+11. **Report a reproducible bug.** Include Minecraft/loader/SFM/pack versions, program, label bindings, sides/slots, machine settings, reproduction steps, and logs. Use the official tracker linked in `config-and-versions.md`.

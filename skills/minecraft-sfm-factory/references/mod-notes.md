@@ -1,74 +1,76 @@
-# 模组适配经验
+# Mod integration notes
 
-> 版本基线：Mekanism、AE2、ExtendedAE、神秘农业、Productive Bees、MI、Occultism、Ars Nouveau、Oritech 主要核对 MC 1.21/1.21.1 对应分支；Thermal 核对 1.20.x，GTCEu Modern 核对 1.20.1。分支不等于已发布版本，魔改包以 JEI/EMI 为准。上游来源见 `config-and-versions.md` 的模组核对表。
-> 这里只记录接口和设计要点；程序见 `templates.md`、`advanced-patterns.md`。交付前注明 MC/加载器、SFM、目标模组和必需附属模组版本，以及机器面/槽位/能源/升级设置。
+The checked baseline uses Minecraft 1.21/1.21.1 branches for Mekanism, AE2, ExtendedAE, Mystical Agriculture, Productive Bees, MI, Occultism, Ars Nouveau, and Oritech; Thermal uses 1.20.x and GTCEu Modern uses 1.20.1. A branch is not a released version. Modified-pack recipes must be checked in JEI/EMI. Sources are in `config-and-versions.md`.
 
-## 通用
+These are interface/design notes. Programs are in `templates.md` and `advanced-patterns.md`. For delivery, state Minecraft/loader/SFM/target-mod/addon versions and required side, slot, power, buffer, and upgrade settings.
 
-- **同名资源**：精确筛选时写命名空间，避免送入其他模组的同名流体或物品。
-- **tag 与物品 ID 不同**：存在 `exdeorum:dust` 物品不表示有 `#exdeorum:dust` tag；未确认 tag 时使用精确物品 ID。
-- **通用 tag**：1.20.1 Forge 多为 `#forge:…`，1.21 NeoForge 多为 `#c:…`，仍需核对资源包。
-- **组件过滤边界**：SFM 的注册 ID/tag 过滤不能按同 ID 的 NBT/组件分种类；运输保留组件与支持按组件筛选是两件事。
-- **先用机器原生功能**：锁槽、输入缓冲上限、过滤、自动弹出可减少 SFML。每条路线明确由谁搬运；由 SFM 收取的路线才关闭冲突的自动弹出。
-- **满仓行为要核对**：停机、丢弃未装入的资源、可配置销毁均可能发生。不能用“机器仍在运行”判断没有损失。
+## General rules
 
-## Mekanism（通用机械）
+- Qualify exact resource IDs with namespaces when multiple mods register similarly named materials.
+- An item ID is not a tag: `exdeorum:dust` does not establish `#exdeorum:dust`.
+- Common tags are often `forge:` on 1.20.1 Forge and `c:` on 1.21 NeoForge; verify the actual pack.
+- Registry-ID/tag filters cannot distinguish same-ID NBT/component variants. Transport preserves components, but these filters do not select by them.
+- Prefer native slot locks, buffers, filters, and automatic output. Assign responsibility for each route; disable ejection only where it conflicts with SFM.
+- Verify full-storage behavior. Machines may stop, discard overflow, or offer configurable voiding. Continued operation does not prove lossless processing.
 
-- **面与资源类型分别配置**：物品、化学品、流体、能量使用各自的侧面配置。null 方向可能只读，实际搬运写具体面并用网络工具核对；配置卡可复制同类机器设置。
-- **标准加工槽**：`InputInventorySlot` 限制外部抽取，符合这一实现的加工机器可共用输入/输出面；不要推广到储罐、物品容器或所有特殊机器。
-- **化学品类型**：MC 1.21.1+ 统一为 `chemical::`；旧的 `gas::` 等在相应构建中是别名，更早版本按资源类型区分。
-- **多化学品不同面**：精确 ID 或分段 `forget`，避免残留输入串面。
-- **电解原版配方**：水 2 mB → 氢 2 + 氧 1；盐水 10 mB → 钠 1 + 氯 1。两条路线合计四种化学品，不是三种。吞吐和缓存按实际配方/消耗计算，没有固定的氢气储罐数量比例。
-- **进 ME 网络**：化学品需要 Applied Mekanistics 等兼容层及对应接口，基础 AE2 的物品/流体能力不能替代化学品能力。
-- **聚变反应堆**：持续燃烧需要按刻验证供料；脉冲宽度不等于上升沿周期。`templates.md` 的自适应程序仅为待实测的社区实验，不能直接保证反应堆不断料。
+## Mekanism
 
-## AE2 及附属
+- Configure sides **separately for items, fluids, chemicals, and energy**. Null-side access may be read-only; use explicit sides and inspect capabilities. Copy settings with a Configuration Card.
+- Standard processing `InputInventorySlot` implementations restrict external extraction, allowing supported machines to share an input/output face. Do not generalize this to tanks, ordinary inventories, or all special machines.
+- MC 1.21.1 builds unify chemicals under `chemical::`; older names such as `gas::` are aliases there. Earlier builds distinguish types.
+- Use exact chemical IDs or `forget` boundaries when different chemicals enter different faces of one machine.
+- Checked upstream separator recipes: 2 mB water → 2 hydrogen + 1 oxygen; 10 mB brine → 1 sodium + 1 chlorine. Size storage from actual production and consumption, not fixed tank-count ratios.
+- ME chemical storage requires appropriate integration such as Applied Mekanistics. Base AE2 item/fluid capabilities do not substitute for chemical capabilities.
+- Fusion fueling needs per-tick validation. Pulse width is not pulse period. The adaptive example in `templates.md` is an unverified community experiment, not a continuous-fueling guarantee.
 
-- **普通阻挡与等待结果锁不同**：Blocking Mode 检查相邻目标是否仍有配方输入；搬空缓存后可再次投料。严格串行选 Lock Crafting → Until primary crafting result is returned，并让主产物经**同一个供应器**返回。普通 ME 接口只接入网络，不能据此解锁该供应器。
-- **无实体产物**：使用真实完成信号；只有设备实际回收或生成标记物时，才能把标记物列为样板产物。
-- **并行工位**：每工位独立缓存、基座、核心和供应器。`to each` 加样板倍数只约束总量，不保证各工位配方齐套。
-- **组件分拣**：精确匹配的存储总线/导出设备先把种类分到专用容器，再交 SFM 运输；不要启用会忽略所需组件的模糊过滤。
-- **AE2 压印器**：先调小输入缓冲；侧面分离设置影响可访问槽位，null 内部库存与方向库存映射要分别核对。印模预先装好。
-- **ExtendedAE（extendedae）**：扩展压印器、水晶装配器属于此模组。核对分支的压印器有 4 个线程，每线程 3 输入+1 输出，支持 1/4/64 缓冲设置；水晶装配器有 9 输入+1 输出。优先设置缓冲和按角色分槽，不能把未复现的卡死率当作选型定律。
-- **AdvancedAE（advanced_ae）**：与 ExtendedAE 分开识别；其限量导出/IO 总线和反应仓等原生功能可能比额外状态机简单。水晶循环先确认实际机器与配方，再使用 `advanced-patterns.md` 的示意程序。
+## AE2 and addons
 
-## GregTech CEu（GTCEu Modern）
+- **Blocking Mode and result locking differ.** Ordinary blocking checks whether adjacent storage still contains pattern inputs. Emptying the staging chest may allow another batch immediately. For strict serialization, use **Lock Crafting → Until primary crafting result is returned**, and route the primary result through **the same Pattern Provider's return inventory**. An ordinary ME Interface does not establish that unlock path.
+- Jobs with no physical result need a real completion signal. A token may be declared as a pattern result only if the process actually returns or creates it.
+- Parallel stations need independent buffers, pedestals, cores, and providers unless a verified role-based allocation scheme guarantees complete recipes at every station. `to each` and multiplied pattern quantities do not guarantee this.
+- For component-sensitive sorting, use exact-match storage/export devices to populate dedicated containers. Do not enable fuzzy matching that ignores the distinguishing component.
+- **AE2 Inscriber:** start with a small input buffer. Sided-separation settings change accessible slots; null/internal and directional automation mappings must be checked separately. Preload presses.
+- **ExtendedAE (`extendedae`):** provides the Extended Inscriber and Crystal Assembler. In the checked branch, the Inscriber has four threads, each with three inputs and one output, and 1/4/64 buffer options. The Crystal Assembler has nine inputs and one output. Use buffer limits and ingredient-role slots before custom state logic.
+- **AdvancedAE (`advanced_ae`):** a separate mod. Native limited export/I/O buses and reaction-chamber features may simplify automation. Confirm the actual machine and recipe before adapting the crystal-loop skeleton.
 
-- 多方块的输入总线、输入仓、输出仓分别贴标签，操作仓口而不是默认操作控制器。
-- 普通单罐仓、4/9 槽流体仓、ME 仓的能力不同；多流体可使用独立罐/仓或已确认的多槽仓，不能把“一个仓只能一种流体”当作通用限制。
-- 固定配方是一种简化设计；电路、模具、不消耗催化剂属于一次性配置，注明所在槽位。需要换配方时另设计清空与恢复。
-- 供电按 GT 的电压/EU 体系核对，不默认支持 FE。每段物料 `input → output → forget`，副产物逐种安排可用接收空间。
+## GregTech CEu Modern
 
-## 神秘农业（Mystical Agriculture）
+- Label input buses, input hatches, and output hatches separately. Access the appropriate part rather than assuming the controller exposes all resources.
+- Single-tank, 4/9-compartment, and ME hatches expose different capabilities. Use verified independent tanks/hatches or multi-compartment storage; “one hatch holds one fluid” is not a universal rule.
+- Fixed recipes simplify routing but are not an inherent machine limitation. Document circuits, molds, and nonconsumed catalysts as one-time setup. Recipe switching needs a clearing/recovery design.
+- Verify GT voltage/EU requirements; do not assume FE support. Isolate material stages with `input → output → forget` and provide usable receiving capacity for every byproduct.
 
-- 一个祭坛对应自己周围的基座；按完整配方给每个基座 1 件。多祭坛独立分料，不能仅靠总件数齐全。
-- **祭坛要激活**：核对的 1.21 分支需要红石或激活交互。自动化时给祭坛常亮信号；给管理器的开关不会自动激活祭坛。
-- 种子配方可核对 `#c:seeds` / `#mysticalagriculture:seeds` 后用于回收；非种子产物改用实际输出过滤或专用输出槽。
-- `"mysticalagriculture:.*_seed_base"` 仅匹配种子基底；其他主材配方需另核对。合成较慢，通常用 100 刻左右轮询即可。
+## Mystical Agriculture
 
-## 资源蜜蜂（Productive Bees）
+- Each altar uses its own surrounding pedestals. Supply one item per required pedestal according to a complete recipe; correct aggregate quantities across several altars are insufficient.
+- **Activate the altar:** the checked 1.21 branch requires redstone or activation interaction. A constant signal can support automation. A switch on the SFM manager does not automatically activate the altar.
+- Verified `#c:seeds` or `#mysticalagriculture:seeds` tags may help collect seed recipes. Non-seed recipes need their own result filter or isolated output slot.
+- `"mysticalagriculture:.*_seed_base"` matches seed bases only. Verify other primary ingredients separately. Slow recipes often need polling only about every 100 ticks.
 
-- 可配置蜜脾 ID 是 **`productivebees:configurable_honeycomb`**；核对的 1.21 分支用 `BEE_TYPE` 数据组件记录种类。SFM 可整体搬运，按种类筛选要先用支持精确组件匹配的设备分开。
-- **离心机可能丢流体**：核对提交 `656641c1054dde8aa8690a10e6bb07ff1e75da41` 中，流体空间不参与配方检查，完成加工后忽略未填入的余量；电动离心机继承此逻辑。满罐/异种流体可能继续加工并丢流体，不能只等停机告警。
-- 需要保留流体时持续导出并监测缓存，必要时暂停输入；按产物分组也可避免异种流体竞争。只有用户允许丢弃时才设溢出销毁。旧版或魔改包应单独实测。
+## Productive Bees
 
-## 热力（Thermal）
+- Configurable combs use **`productivebees:configurable_honeycomb`**. The checked 1.21 branch stores the variant in the `BEE_TYPE` data component. SFM can transport them together; sort variants first with exact component-aware filtering when needed.
+- **Centrifuges may lose fluids.** At checked commit `656641c1054dde8aa8690a10e6bb07ff1e75da41`, fluid space is omitted from recipe readiness and uninserted fluid is ignored at completion. Powered Centrifuges inherit this behavior. A full tank or incompatible fluid may cause loss while item processing continues.
+- For fluids that must be kept, export continuously, monitor buffers, and stop input before capacity is exhausted. Grouping machines by fluid output can avoid incompatible-fluid contention. Add a void route only with permission to discard that byproduct; retest other versions/packs.
 
-- 有机灌注器存在种子输入、催化剂槽、水罐和输出槽。按每种能力配置顶部输入/输出，示例见 `templates.md`，配方仍以 JEI 为准。
-- 核对的 1.20.x 支持循环处理增幅功能：从输出回收匹配种子，减少外部补种循环。是否安装该增幅、剩余种子如何回流要写清；不要把所有机器默认当作已升级。
+## Thermal
 
-## Modern Industrialization（现代工业化）
+- The Phytogenic Insolator has seed input, catalyst input, water, and output storage. Configure capabilities separately; the array example uses the top face. Confirm the installed recipe in JEI.
+- The checked 1.20.x branch supports a cyclical-processing augment that recovers matching seeds. State whether it is installed and how remaining seeds return. Do not assume every machine has that upgrade.
 
-- 默认 EU 供电，用匹配电压的 MI 电缆。核对分支的 `bidirectionalEnergyCompat` 默认 false，不能假定 `output fe::` 能直接为装配机充电；只有确认配置及能力后才写 FE 方案。
-- 先用原生锁槽、槽位数量限制和自动输出，防止单种材料占满输入。装配机可用锁槽安排多种配方；配方和流体仍需核对整合包。
+## Modern Industrialization
+
+- Supply matching-voltage EU through MI cables by default. The checked branch defaults `bidirectionalEnergyCompat` to false; do not assume `output fe::` powers an Assembler. Use FE only after checking the configuration and exposed compatible capability.
+- Use native slot locks, per-slot limits, and automatic output to stop one ingredient from occupying all input slots. Verify recipes and fluid requirements in the pack.
 
 ## Refined Storage
 
-- 用精确组件匹配先分仓；区分 RS 1.x/2.x/3.x 的界面和行为。核对新版文档中 External Storage 默认黑名单、Fuzzy 默认关闭，配置时明确允许列表和精确匹配，不只说“加过滤”。
+Use exact component-aware filtering to separate variants. RS 1.x/2.x/3.x interfaces and behavior differ. In the checked newer documentation, External Storage defaults to blacklist mode and Fuzzy is off. Specify allow-list versus deny-list mode and exact matching explicitly.
 
-## 仪式与多步骤模组（Occultism、新生魔艺、Oritech 等）
+## Ritual and multistep mods
 
-- **先确认自动化能力**：有能力的方块可直接访问；没有时才考虑右键模拟器，并区分启动条件、配方消耗和成品输出。
-- **Occultism 1.21.1**：献祭碗可处理物品，黄金碗插入激活物时会验证并尝试启动仪式。辅料先就位，激活物最后投；还要满足阵法和其他仪式条件，并设计真实完成信号。
-- **Ars Nouveau**：灌注室与附魔装置分别设计。灌注室周边基座的材料通常不消耗，应一次性配置，避免每批重复加料；Source 与 FE 是不同资源体系。
-- **Oritech 1.21**：加速器按“速度传感器→比较器→达到阈值再投入第二粒子”设计；电机负责加速供电，泛用的一次性放电模板不能代替速度控制。扩展模组可简化流程，但须注明依赖和版本。
+First inspect automation capabilities. Use a right-click simulator only when the relevant operation requires it. Distinguish ingredient insertion, activation, processing conditions, and result extraction.
+
+- **Occultism 1.21.1:** Sacrificial Bowls support item handling; inserting the activation item into a Golden Sacrificial Bowl validates and attempts to start the ritual. Stage secondary ingredients first and the activation item last. Check the pentacle and other conditions, and provide a real completion signal.
+- **Ars Nouveau:** design Imbuement Chamber and Enchanting Apparatus workflows separately. Chamber pedestal ingredients are generally nonconsumed recipe conditions; configure them once rather than distributing them every batch. Source and FE are different systems.
+- **Oritech 1.21:** use the accelerator's speed sensor → comparator → second-particle insertion at the required threshold. Motors supply acceleration energy. A generic one-shot discharge is not a complete accelerator controller. Declare any simplifying addon and its version.
