@@ -1,83 +1,87 @@
-# 物品、方块与游戏内工具
+# SFM blocks, items, and in-game tools
 
-> 何时读：用户问 SFM 的方块和物品、标签枪/网络工具操作、编辑器快捷键，或需要搭建小技巧时。
+Read this for block names, Label Gun and Network Tool operation, editor shortcuts, and physical setup. Names below follow the upstream English localization; key bindings may be remapped.
 
-| 物品 | 作用 |
+| Block or item | Purpose |
 |---|---|
-| 工厂管理器（Factory Manager） | 工厂核心，放入磁盘后运行程序。同一线缆网络可有多个管理器；管理器本身也可充当线缆；管理器可以操作自己（4.27.0+，可用来换磁盘） |
-| 隧道式工厂管理器（Tunnelled Factory Manager，4.27.0+） | 具有管理器全部功能，并把相邻面的输入输出"隧穿"到相对面，可堆叠（如 漏斗→管理器→箱子）。可直线传输物品、流体、能量、通用机械化学品，**不能传红石信号**；也可作管道交叉点避免飞线 |
-| 工厂线缆（Inventory Cable） | 连接管理器和操作对象。操作方向与连接方向无关，由程序决定 |
-| 精致工厂线缆（Fancy Inventory Cable，4.20.0+） | 非完整方块模型，效果一致且可互连；4.34.0+ 可含水；可套"伪装"（facade） |
-| 隧道线缆 / 坚固线缆（Tunnelled / Tough Cable，4.29.0+） | 隧道线缆用于穿过方块；坚固线缆抗爆 |
-| 磁盘（Factory Manager Program Disk） | 存程序和标签；放进管理器运行，也可手持右击编辑 |
-| 标签枪（Label Gun） | 给方块添加标签 |
-| 网络工具（Network Tool） | 诊断与伪装 |
-| 蓄水槽（Water Tank） | 至少两个面接触水源时是无限水源 |
-| 印刷机（Printing Press） | 复制磁盘等（需要时让用户查 JEI） |
+| Factory Manager | Runs the inserted disk. Several managers may share a cable network. The manager acts as cable and can access itself from 4.27.0, including disk replacement |
+| Tunnelled Factory Manager, 4.27.0+ | Manager functionality plus straight-through capability access between opposite faces, for example hopper → manager → chest. Supports item/fluid/energy/chemical interfaces, but does not tunnel redstone signals |
+| Inventory Cable | Connects managers and targets. The program's side selection is independent of the cable's attachment face |
+| Fancy Inventory Cable, 4.20.0+ | Smaller cable model with equivalent connectivity; supports facades and, from 4.34.0, waterlogging |
+| Tunnelled Inventory Cable / Tough Inventory Cable, 4.29.0+ | Tunneling through blocks / blast-resistant cabling |
+| Factory Manager Program Disk | Stores code and labels; insert it to run, or right-click while holding it to edit |
+| Label Gun | Assigns labels to world positions and exchanges mappings with the disk |
+| Network Tool | Inspects networks and capabilities; also used when applying cable facades |
+| Water Tank | Renewable water source when activated by adjacent source blocks; see below |
+| Printing Press | Copies disks and other supported items; consult JEI for the installed version's recipes |
 
-**基本搭建顺序**：磁盘放入管理器 → 线缆连接各方块 → 标签枪标记方块并推送到磁盘 → 编写/粘贴程序 → 检查警告。
+Basic setup: insert disk → connect targets → write the program → pull its labels into the Label Gun → assign blocks → push labels back → inspect warnings and test.
 
-## 标签枪操作
+## Label Gun
 
-| 操作 | 作用 |
+| Default action | Effect |
 |---|---|
-| 右击空气 | 打开 GUI（搜索/新建标签；Prune 清理无用标签；Cycle label view 切换渲染） |
-| 右击方块 | 为方块添加/移除当前标签 |
-| Shift + 右击方块 | 清除该方块的所有标签 |
-| Ctrl + 右击方块 | 连续模式：为所有连续的相同方块添加/移除标签（以每个有效方块为中心 3×3×3 范围内、连接到任意线缆网络的相同方块判定有效；没挨着线缆的会被跳过并在聊天提示） |
-| Alt + 右击方块（4.20.0+） | 选取（pick）该方块上的一个标签 |
-| Shift + 滚轮 | 上一个/下一个标签（按字母顺序循环；4.24.0+ 可改键位） |
-| 右击管理器 | **推送**：标签枪 → 磁盘 |
-| Shift + 右击管理器 | **拉取**：标签枪 ← 磁盘 |
-| Alt（4.20.0+） | 切换标签渲染：全部 / 此标签 / 此方块 |
+| Right-click air | Open the GUI to search/create labels, Prune unused labels, or change label rendering |
+| Right-click a block | Add/remove the active label |
+| Shift+right-click a block | Clear all labels on that block |
+| Ctrl+right-click a block | Contiguous mode: label/unlabel nearby matching connected blocks. Searches around valid blocks within a 3×3×3 neighborhood; blocks not touching a cable network are skipped with a chat message |
+| Alt+right-click a block, 4.20.0+ | Pick a label from that block |
+| Shift+scroll | Cycle labels alphabetically; binding configurable from 4.24.0 |
+| Right-click the manager | **Push:** gun mappings → disk |
+| Shift+right-click the manager | **Pull:** disk mappings → gun |
+| Alt, 4.20.0+ | Change label rendering mode |
 
-> 推荐流程：**先写程序，再 Shift+右击管理器拉取标签**，然后对着世界里的方块逐个贴标签，最后右击管理器推送。
+Manager clicks have special push/pull behavior. Recommended order: write code, pull labels from the manager, label the world blocks, then push. A label names a **block position**, not a face; the program specifies the face.
 
-## 网络工具
+## Network Tool
 
-手持时穿透显示管理器、线缆、标签。
+While held, the tool highlights managers, cables, and labels through blocks.
 
-- **主手右击方块**：聊天栏显示该方块的 BlockState、所属线缆网络、可用能力（物品/流体/能量…）及它们开放的面（点击的那一面为输出方向）。
-- **4.20.0+ 线缆伪装（副手拿网络工具，主手拿方块，右击线缆）**：
+- **Main-hand right-click a target:** inspect its BlockState, cable-network membership, resource capabilities, and accessible sides. Click the relevant face when diagnosing a route.
+- **Apply facades, 4.20.0+:** hold the Network Tool in the offhand and the facade block in the main hand, then right-click a cable.
 
-| 操作 | 范围 |
+| Facade modifier | Scope |
 |---|---|
-| 右击 | 单个方块 |
-| Ctrl + 右击 | 连续的相同方块 |
-| Alt + 右击 | 线缆网络内所有相同方块 |
-| Ctrl + Alt + 右击 | 线缆网络内所有方块 |
+| None | One block |
+| Ctrl | Contiguous matching blocks |
+| Alt | Matching blocks throughout the cable network |
+| Ctrl+Alt | All blocks in the cable network |
 
-- 4.29.0+ 网络工具可"调谐"到某个方块位置。
+From 4.29.0, the tool can be tuned to a block position.
 
-## 蓄水槽输出量
+## Water Tanks
 
-- ＜4.20.0：不论是否有无限水源，每个提供 1000 mB/t。
-- ≥4.20.0：相连水槽需具有无限水源，输出 `1000 × 2^(有效水槽数 − 1)` mB/t。
-- 命令 `/sfm bust_water_network_cache` 可清水槽网络缓存。
+A tank becomes active with at least two adjacent water source blocks. Check placement and activation rather than treating any tank as infinite water.
 
-## 程序编辑界面快捷键
+- Before 4.20.0, older behavior was documented as a fixed 1,000 mB supply; use the matching version's source when supporting it.
+- In the checked modern implementation, an active tank exposes an amount based on connected active tanks: `1000 × 2^(active tanks − 1)` mB, subject to integer limits. Draining copies water without consuming the renewable supply.
+- **This formula describes the exposed amount/per-drain ceiling, not a guaranteed mB-per-tick throughput.** Trigger frequency, transfer calls, and the receiving capability still matter.
+- `/sfm bust_water_network_cache` clears the water-network cache if topology is stale.
 
-| 快捷键 | 作用 |
+## Editor and inspector shortcuts
+
+| Default shortcut | Action |
 |---|---|
-| Ctrl + E | 在管理器界面打开编程界面 |
-| Ctrl + Shift + E | 在管理器界面查看示例程序（模板） |
-| Ctrl + / | 用 `--` 注释/取消注释当前行 |
-| Tab / Shift + Tab | 缩进/取消缩进 |
-| `\`（4.21.0+，4.32.0+ 可改键位） | 接受代码补全 |
-| Shift + Enter | 完成编辑（保存并关闭） |
-| Ctrl + Back / Ctrl + Del | 删除到单词边界 |
-| Home / End、Ctrl + Home / Ctrl + End | 行首行尾、全文首尾 |
-| Ctrl + Space | 在 input、output、resourceid、label、if、boolexpr 处查看可用项（可获得容器里已有的 resourceid 与标签） |
-| Ctrl + I（容器界面中） | 开关容器检查器：显示槽位编号，可导出检查器（**显示的是 GUI 槽位，不一定等于自动化槽位**） |
-| 左下角 `#` / 编辑器配置按钮（4.21.0+） | 切换行号与代码补全 |
+| Ctrl+E in manager GUI | Open the program editor |
+| Ctrl+Shift+E in manager GUI | Open example/template programs |
+| Ctrl+/ | Toggle `--` comments |
+| Tab / Shift+Tab | Indent / unindent |
+| `\`, 4.21.0+ | Accept completion; configurable from 4.32.0 |
+| Shift+Enter | Save and close the editor |
+| Ctrl+Backspace / Ctrl+Delete | Delete to a word boundary |
+| Home / End | Start/end of line |
+| Ctrl+Home / Ctrl+End | Start/end of document |
+| Ctrl+Space | Inspect available IDs, labels, or completions at the relevant program position; resources in labeled containers are especially useful |
+| Ctrl+I in a container GUI | Toggle the Container Inspector, show GUI slot indices, and access export tools |
+| Lower-left `#` / editor configuration button, 4.21.0+ | Line-number and completion settings |
 
-程序最长约 **32,300 字符**（原版限制）。
+**GUI slot indices may differ from automation indices.** Confirm side-specific capabilities and mappings before using `slots` in a production program. A conservative disk budget is about 32,300 characters; the checked source constant is 32,600.
 
-## 搭建小技巧
+## Practical setup notes
 
-- **查资源 ID 和 tag**：在编辑界面外按 F3+H 打开高级提示框，鼠标悬停在物品上即可看到注册名；tag 需要 JEI/EMI 或 Ctrl+Space 查看。
-- **一个方块可以有多个标签**：例如同一台机器既属于 `"耗电机器"`，又属于 `"氧化机"`。能量统一给 `"耗电机器"`，物料按功能标签分配，能省掉很多重复语句。
-- **相对方向 `front`**：多数机器放置时正面朝向玩家，`front` 即这一面；部分模组或潜行放置会反转朝向，用网络工具确认。
-- **Mekanism 配置卡**：可以把一台机器的侧面配置复制到其他同类机器，大阵列先配好一台再批量复制。
-- **线缆只要贴着机器**：程序操作哪个面由 `side` 决定，与线缆接在哪一面无关。
-- **机器自身的输出上限不影响 SFM**：SFM 直接从机器的槽位/储罐中抽取，不受机器"自动弹出"速度的限制（社区经验）。
+- **IDs and tags:** F3+H enables advanced item tooltips with registry IDs. Use JEI/EMI or SFM inspection for tags; do not assume the ID is also a tag.
+- **Several labels per block:** one machine may belong to both `powered_machines` and `oxidizers`, sharing energy distribution while retaining separate material routes.
+- **Relative sides:** `front` follows the block's facing, which depends on placement and mod behavior. Confirm it with the Network Tool.
+- **Mekanism Configuration Card:** configure one machine, then copy its settings to matching machines in an array.
+- **Cable face and access face are independent:** the cable only needs to connect the block; SFML selects the capability face.
+- **Transfer limits:** SFM may bypass a machine's native automatic-ejection schedule by accessing its inventory directly. It still respects capability insertion/extraction rules and transfer limits; do not promise unlimited throughput.

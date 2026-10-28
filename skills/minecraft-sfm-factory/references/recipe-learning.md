@@ -1,189 +1,170 @@
-# 配方生产学习书
+# Discovering a production recipe
 
-> 何时读：用户要自动化生产某样东西（"MEK 钢自动化""自动化核燃料""做一条处理器产线"），而你还不确定**目标产物、配方链、资源 ID、机器接口**中的任何一项时。**在写任何代码之前读。**
->
-> 本文件**不存任何配方**。配方随模组版本变化，整合包还会大量修改。这里教的是：如何从可靠来源学到"用户游戏里真正可用"的生产方式。
+Read this **before writing a production program** whenever the target, recipe chain, resource IDs, or machine interface is uncertain. This file is a discovery method, not a recipe database. Recipes change between versions and modpacks.
 
-**目录**：为什么不能凭记忆 · 事实分级 · 学习流程 · 获取配方的来源 · 从配方链到 SFM 设计 · 用标签代替资源 ID · 回复模板 · 禁止事项
+## Why memory is insufficient
 
-## 为什么不能凭记忆
+| Required fact | What can change |
+|---|---|
+| Recipe chain: machines, steps, ingredients, quantities, outputs | Mod updates; KubeJS, CraftTweaker, datapacks, and other pack changes |
+| Resource IDs and tags | Renames, platform tag conventions, and same-named resources from different mods |
+| Machine interface: sides, slots, power, settings | Mod version, orientation, side configuration, upgrades, and the actual world layout |
 
-一段 SFM 程序依赖三类游戏数据，模型的记忆都不可靠：
+A syntactically valid program can still be unusable: no recipe starts, inputs reach the wrong inventory, or the disk warns `Resource "x" was not found.`
 
-| 游戏数据 | 例子 | 为什么不可靠 |
+## Evidence levels
+
+| Level | Source | How to use it |
 |---|---|---|
-| 配方链 | 产物由哪些机器、经过哪几步、用什么原料做成 | 模组更新会改配方；**整合包（尤其魔改包）经常用 KubeJS、CraftTweaker 等脚本大量修改配方** |
-| 资源 ID / tag | 物品、流体、化学品的注册名 | 跨版本改名；1.20.1 与 1.21+ 的 tag 体系不同；整合包里常有多个模组的同名资源 |
-| 机器接口 | 哪个面进哪种资源、产物在几号槽 | 取决于用户的侧面配置、机器朝向，只存在于用户的世界里 |
+| **A — Confirmed** | User's JEI/EMI, actual Ctrl+Space IDs, or explicit description | Suitable for implementation |
+| **B — Sourced** | Matching-version official documentation or mod source | Cite source/version and ask the user to cross-check JEI, since packs can override it |
+| **C — Recalled** | Model memory or a plausible naming convention | Use only to frame questions; do not present it as a verified recipe or ID |
 
-凭记忆写出的代码即使语法正确，也很可能是**废代码**：机器不开工、资源进错地方、编译出 `Resource "x" was not found.` 警告。
+Resolve missing essentials before producing a production program. If the user explicitly requests an immediate draft, mark assumptions in the explanation and with `-- UNVERIFIED` comments, minimize guessed IDs, and provide verification steps.
 
-## 事实分级
+## Discovery workflow
 
-每个用到的游戏事实都要知道来源：
+Skip known information. Ask the most useful 1–3 questions per turn and explain exactly what the user should inspect.
 
-| 等级 | 来源 | 能否写进代码 |
-|---|---|---|
-| **A 已确认** | 用户提供：JEI/EMI 截图或文字、Ctrl+Space 列出的 ID、用户明确描述 | ✅ 可以 |
-| **B 有出处** | 经用户同意后检索到的官方 wiki、模组源码中的配方文件（注明来源与版本） | ✅ 可以，但必须标注"请在 JEI 中核对"，用户的整合包可能改过 |
-| **C 记忆** | 模型自己记得的配方、ID | ❌ 不能写进代码；只能用来**提出更好的问题**（如"是不是这几种之一"） |
+### 1. Identify the exact target
 
-**信息不全时只问不写。** 唯一例外：用户明确要求"直接生成"。这时可以写，但所有 C 级内容必须在代码注释和说明里标注"未核实"，并附验证方法。
+Use the precise JEI/EMI name where possible. “Fuel,” “steel,” “processor,” “alloy,” or “nuclear fuel” can refer to several mods or several products in one mod. Offer plausible choices as questions; do not choose the target for the user. If the mod is unknown, identify it first or present mod/product choices.
 
-## 学习流程
+### 2. Establish the environment once
 
-按顺序进行，已知的步骤跳过。**陪用户分几轮完成**：每轮只问当下最关键的 1–3 件事，并告诉用户具体去 JEI 里看什么；不要一次抛出一长串问题。
+Ask early for Minecraft, loader, SFM version, and modpack/version if missing. Determine whether recipes are customized. Reuse this context until the user changes it; do not ask every turn.
 
-### 第 1 步：确认目标产物
+In heavily modified packs, upstream recipes are reference material. The user's installed JEI/EMI is the primary evidence for the actual recipe.
 
-- 目标必须精确到**具体物品**（最好是 JEI 里的名字）。
-- 目标有歧义时**列出候选让用户选，绝不替用户选**。常见歧义：
-  - 泛称：核燃料、电路、处理器、合金、燃料、钢……
-  - 同名不同模组：多个模组都有"钢""青铜""硅"
-  - 同一模组内多种：例如裂变燃料与聚变燃料
-- 用户没说模组时，先问模组，或给出"可能的模组 + 产物"选项。
+### 3. Build the recipe chain
 
-### 第 2 步：确认是不是整合包 / 魔改包
+Guide the user to view the target's recipe, then inspect missing intermediate ingredients. JEI normally uses **R** for recipes and **U** for uses; bindings may differ. Inspect one or two steps at a time until the remaining inputs are resources the user already supplies.
 
-**只在对话第一轮问一次**（用户已说明的除外），之后整段对话沿用。大多数玩家会在同一个整合包里玩很久，环境基本不变，**不要每轮重复问**；用户提到换了整合包或版本时再更新。可以和第 1 步放在同一轮问：
+Organize the evidence into a table and resolve ambiguities before coding:
 
-- 是否在玩整合包？哪一个、哪个版本？是不是"魔改包"（GregTech 系、各类硬核/科技向整合包通常会重写大量配方）？
-- **魔改包里，原版模组的配方只能当参考**，一切以用户 JEI 中看到的为准，不要用 wiki 上的原版配方去套。
-
-### 第 3 步：获取配方链（来源优先级见下一节）
-
-引导用户在 JEI 中逐步查：先对目标按 R，配方里出现中间产物就继续对它按 R，每轮一两步，直到所有原料都是用户已有的东西。把用户发来的内容逐步整理成**生产链表**，最后请用户整体确认：
-
-| 步骤 | 机器 | 输入（数量） | 输出（数量） | 副产物 | 备注（耗时、催化剂、电路等） |
+| Step | Machine | Inputs and quantities | Outputs and quantities | Byproducts | Timing / catalyst / circuit / power |
 |---|---|---|---|---|---|
 
-- **副产物一列不能漏**：没有接收空间的副产物可能使机器停机，也可能被丢弃，必须核对版本行为（`advanced-patterns.md`"防满仓卡死"）。
-- 不消耗的催化剂、编程电路、模具等，属于"一次性手动设置"。
+Do not omit byproducts. Depending on the machine, blocked byproducts can stop processing or be lost. Nonconsumed catalysts, circuits, molds, and presses normally belong in one-time setup rather than every-batch routing.
 
-### 第 4 步：指定机器接口（由你设计，告诉用户怎么改）
+### 4. Specify a supported machine configuration
 
-不需要问用户机器现在怎么配，而是**根据设计直接给出配置要求**，写进"怎么搭"：
+Design the required configuration instead of repeatedly asking how every machine is currently configured. Include:
 
-- 每台机器哪个面设为输入、哪个面设为输出（例如"粉碎机：底部设为物品输入/输出，其他面禁用"）；
-- 关闭自动弹出/自动输出，由 SFM 统一搬运；
-- 编程电路、催化剂、模具等一次性设置；
-- Mekanism 可以先配好一台，再用配置卡复制给同类机器。
+- Orientation and resource-specific input/output sides.
+- Verified automation-slot mappings and any slot locks or buffer limits.
+- Which routes SFM owns and which use native ejection or pipes.
+- One-time circuits, catalysts, molds, or presses.
+- Power type and voltage/integration requirements.
 
-只有用户说明无法按建议配置（机器位置受限、已有其他管道接在那一面等）时，再按用户的实际情况调整程序里的面。产物槽号不确定时，让用户用 Ctrl+I 或网络工具查一下。
+For Mekanism, configure one machine and copy to matching machines with a Configuration Card. Adapt when the user reports layout constraints. If a capability or slot mapping is uncertain, inspect it with the Network Tool and targeted tests; Ctrl+I indices alone may be GUI indices.
 
-### 第 5 步：设计并写代码
+### 5. Derive the SFM design
 
-按"从配方链到 SFM 设计"一节推导，然后回到 SKILL.md 第 2 节写代码、简化、自检。
+Use the mapping below, then return to SKILL.md section 2 for implementation, simplification, and review.
 
-## 获取配方的来源
+## Source priority
 
-按优先级使用：
+### User's installed JEI/EMI
 
-### ① 用户的 JEI / EMI（第一对齐点）
+Useful guidance:
 
-用户游戏里的 JEI/EMI 就是**唯一的最终事实**。可以直接把下面的话术发给用户：
+- Hover the target and press **R** to view its recipe, or use the configured recipe key.
+- If several machines or recipe pages are shown, identify the intended route.
+- A screenshot or a typed `machine: inputs → outputs` description works.
+- Enable **F3+H** for item registry IDs; use Ctrl+Space with resources in a labeled container for SFM identifiers.
 
-- 鼠标指向目标物品按 **R** 查看它的配方（怎么做出来），按 **U** 查看它的用途；
-- 配方有多页、多种机器时，告诉我你打算用哪一种；
-- 发截图最方便，也可以按"机器：输入 → 输出"的格式打字；
-- 按 **F3+H** 开启高级提示框后，物品提示里会显示注册名（ID）。
+### Matching-version official references
 
-### ② 用户无法提供时：申请协助，再去查资料
+When user-provided evidence is unavailable, explain what is missing. If the user requested research or has already authorized it, proceed; otherwise ask whether they prefer to provide JEI details or use sourced upstream recipes. Do not ask for the same authorization repeatedly.
 
-模型没有可参考的 A 级信息，用户也一时提供不了时：
+Check, in order:
 
-1. **先向用户说明情况并请求协助**：说明缺少哪些信息，询问用户能否提供；或征得同意后由你去查公开资料。
-2. 有联网/搜索工具且用户同意时，按以下顺序查：
-   - **模组官方 wiki / 官方文档**（注意页面对应的模组版本）；
-   - **模组源码中的配方文件**：通常在 `src/main/resources/data/<modid>/recipe/`（1.21+）或 `…/recipes/`（1.20.1 及更早）；用数据生成器的模组可能在 `src/generated/…` 或 `src/datagen/…` 下；**要切到与用户版本对应的分支或标签**；
-   - **整合包自己的修改**：整合包目录下的 `kubejs/server_scripts/`、`scripts/`（CraftTweaker）可能改写或删除配方，用户可以搜索目标物品的 ID 确认。
-3. 查到的内容属于 B 级：在回复中注明**来源链接和版本**，并请用户在 JEI 中核对一遍。
-4. 查不到或来源互相矛盾时，**如实告诉用户**，回到 ①，不要挑一个看起来合理的写。
+1. Official wiki/documentation for the matching version.
+2. Recipe files in the mod's matching branch/tag: commonly `src/main/resources/data/<modid>/recipe/` on 1.21+, `recipes/` on older versions, or generated/datagen sources.
+3. The modpack's overrides, including `kubejs/server_scripts/`, CraftTweaker `scripts/`, and datapacks. Search by the target's confirmed ID.
 
-### ③ 模型记忆：只用来提问
+Cite the link and version and state that the pack may override the result. If sources conflict or no reliable source exists, say what remains unknown and return to in-game evidence. Do not assemble a plausible chain from incompatible versions.
 
-记忆里的配方只能用来**缩小问题范围**，例如列出"可能是这几种"让用户挑选，或提醒用户"这一步通常会有副产物，请确认"。**不能写进代码，也不能当成结论陈述。**
+### Memory
 
-## 从配方链到 SFM 设计
+Use recollection to narrow the question, offer possible targets, or remind the user to check byproducts. It is not evidence for executable production recipes or invented IDs such as `modid:guessed_dust`.
 
-| 配方链里的东西 | SFM 设计 |
+## From recipe chain to program
+
+| Recipe requirement | SFM design |
 |---|---|
-| 每个步骤 | 一类机器一个标签；同类机器做不同步骤时按步骤分标签 |
-| 每种外部原料 | 一个专用来源容器（`"硫粉箱"`），或 AE 接口 + 精确 ID |
-| 上一步产物 → 下一步输入 | `input … from each "上一步机器" <输出面>` → `output … to each "下一步机器" <输入面>`，每段后 `forget` |
-| 副产物 | 专用出口或溢出口，绝不能没有去处 |
-| 各步骤耗时不同 | 按耗时比例分配机器数量（`efficiency.md`） |
-| 催化剂、编程电路、模具 | 一次性手动设置，写进"怎么搭" |
+| Processing step | A label for the machine role; separate groups where identical machines perform different recipes |
+| External ingredient | Dedicated labeled source container, or mixed storage with a verified exact filter |
+| Intermediate output | Read the preceding machine's output and feed the next stage; clear registrations between stages |
+| Byproduct | Usable receiving space and a deliberate full-storage policy |
+| Unequal processing times | Balance machine counts against measured stage throughput |
+| Nonconsumed circuit, press, catalyst, or mold | One-time setup with slot details |
+| Ordered or parallel batches | Station-specific allocation and a verified completion/return path |
 
-## 用标签代替资源 ID
+## Reduce dependency on IDs
 
-最可靠的防幻觉手段：**让程序尽量不需要知道资源叫什么**。
+Dedicated inventories can make the program independent of ingredient names:
 
-- **每种原料一个专用容器**：用户把原料放进对应的标签容器，程序写 `input from "硫粉箱"`，不需要 ID。
-- **一台机器一个配方、一个面一种资源**：`input gas:: from each "氧化机" right side` → `output gas:: to each "灌注机" left side`，不需要知道是哪种气体。
-- **只在两种情况下需要 ID**：
-  1. 从混装的仓库或 AE 中挑出特定资源；
-  2. 同一种资源类型的多种东西要送进同一台机器的不同面。
-- **需要 ID 时的最可靠获取方法**：让用户把实物放进已贴标签的容器，然后在 SFM 编辑器里把光标放在资源位置按 **Ctrl+Space**，列出的就是这个容器里**真实存在**的 ID。其次是 F3+H 高级提示框、JEI/EMI 中显示的注册名。
+- One source container per ingredient: `input from sulfur_supply` needs no item ID when the container is dedicated.
+- One recipe per machine group and a single resource role per face: a version-appropriate `gas::` or `chemical::` route may need no exact chemical ID.
+- Use exact IDs when selecting from mixed storage or when several resources of one type must enter different machine faces. `forget` can also isolate separate dedicated sources.
 
-## 回复模板
+For an ID that is needed, place the real resource in a labeled container and use **Ctrl+Space** at the resource position in SFM. Confirm tags independently; a resource's registry ID does not establish a tag.
 
-### 目标不明确时
+## Response examples
+
+### Ambiguous target, environment unknown
 
 ```text
-【需求确认】写代码前先确认两件事：
-
-1. "核燃料"指哪一种？
-   A. ……（模组 X）
-   B. ……（模组 Y）
-   C. 其他（告诉我 JEI 里的物品名就行）
-2. 你在玩哪个整合包（或者是自己组的模组）？SFM 和 MC 版本是多少？
+Before writing the program, I need two details:
+1. Which exact product do you mean by “nuclear fuel”? The JEI name is enough.
+2. Which modpack/version, Minecraft version, and SFM version are you using?
 ```
 
-> 第 2 项只在对话第一轮问；之后的回合沿用，不再重复问。
+Ask the environment question only when it is not already known. Offer actual target options when there is enough context to do so accurately.
 
-### 引导用户查 JEI（后续轮次）
+### Continue recipe discovery
 
 ```text
-好的，是「目标」。请在 JEI 里对它按 R，把配方截图发给我（或者告诉我：用什么机器、放哪些原料、出来什么）。
-如果原料里有你还没有的东西，也对它按 R，一起发给我。
+For that target, open its recipe in JEI and share the machine, inputs, quantities,
+and outputs. Include any byproducts. If an ingredient needs another processing
+step, open that recipe too; we can work through the chain one stage at a time.
 ```
 
-### 目标明确、配方未确认时
+### Target known, chain incomplete
 
 ```text
-【配方确认】请在 JEI 中对「目标物品」按 R 查看配方，确认或更正下面的生产链：
-（以下内容来自记忆，未核实。如果你在玩魔改包，配方很可能不同，请以 JEI 为准）
+I have the target and environment. The remaining gap is the processing chain.
+Please confirm the missing rows in this table from JEI:
 
-| 步骤 | 机器 | 输入 | 输出 | 副产物 |
+| Step | Machine | Inputs | Outputs | Byproducts |
 |---|---|---|---|---|
-| … | … | … | … | … |
+| ... | ... | ... | ... | ... |
 
-另外请告诉我：每一步各几台机器、原料从哪里来。
-确认后我会用"每种原料一个箱子"的方式写，你不需要提供物品 ID。
+Also include the machine count for each stage and where the raw materials come
+from. Dedicated ingredient containers can avoid most resource-ID filters.
 ```
 
-### 没有参考来源时
+Populate confirmed rows from evidence. Do not fill unknown rows with remembered recipes merely to make the table look complete.
+
+### No reliable recipe source
 
 ```text
-【需要协助】我没有关于「目标」在你这个版本/整合包中的可靠配方信息。可以选择：
-A. 你在 JEI 中按 R 截图或打字发给我（最准确）
-B. 同意我查询官方 wiki / 模组源码中的配方（我会注明来源和版本，仍需你在 JEI 中核对）
+I do not have a reliable recipe for this product in your version or pack.
+You can provide the JEI recipe, or I can check the matching official documentation
+and source. Upstream recipes will still need a JEI cross-check for pack changes.
 ```
 
-### 用户要求"直接生成"时
+### Immediate draft requested
 
-- 可以生成代码，但在开头声明"以下配方和 ID 未经核实"；
-- 代码中来自记忆的部分加注释 `-- 未核实：…`；
-- 尽量使用"用标签代替资源 ID"的设计，减少需要核实的 ID；
-- 末尾列出验证步骤：JEI 核对配方、Ctrl+Space 核对 ID、看磁盘警告。
+State the unverified assumptions at the start, mark affected code with `-- UNVERIFIED: ...`, prefer dedicated sources, and finish with checks for recipes, IDs, capabilities, and disk warnings.
 
-## 禁止事项
+## Avoid these mistakes
 
-- ❌ 用户没说清目标时，自己挑一个"最常见"的产物来写。
-- ❌ 把记忆中的配方、ID 当成事实写进代码，或不加标注地陈述。
-- ❌ 对魔改包套用原版模组的配方。
-- ❌ 查不到资料时，拼凑一个"看起来合理"的配方链。
-- ❌ 编造资源 ID（例如凭命名习惯推测 `modid:xxx_dust`）。
-- ❌ 每轮重复问已知的环境（整合包、版本），或一次抛出一长串问题；每轮只问最关键的 1–3 件事，并尽量给出选项。
-- ❌ 反复询问机器现在怎么配：机器接口由你按设计指定，告诉用户怎么改。
+- Choosing a common target when the user's wording is ambiguous.
+- Treating recalled recipes or guessed IDs as confirmed.
+- Applying unmodified upstream recipes to a customized pack without qualification.
+- Hiding missing evidence behind a plausible-looking production chain.
+- Repeating known environment questions or presenting a long questionnaire.
+- Asking about current side settings when you can propose a supported configuration; verify only the facts and constraints that affect that design.

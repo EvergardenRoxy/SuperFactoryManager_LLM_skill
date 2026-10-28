@@ -1,72 +1,62 @@
-# 效率与机器适配（堆量工厂必读）
+# Throughput, machine arrays, and performance
 
-> 何时读：机器阵列达到数十台以上、多种产物、只有部分机器在干活、服务器卡顿，或要选择堆量用的机器时。具体模组/版本和源码见 `mod-notes.md`、`config-and-versions.md`。
+Read this for arrays of dozens of machines, mixed products, uneven utilization, server lag, or machine selection. Interface/version notes are in `mod-notes.md`; sources are in `config-and-versions.md`.
 
-## SFM 的执行逻辑
+## Allocation is sequential
 
-同一次触发内按顺序处理来源与目标。原料不足时，靠前目标可能先拿到；用 `to each` 配合小数量或 `retain` 限制每台输入，前提是每台得到的材料足以完成配方。`output N to b` 是所有 b 合计的预算，可以分给多个方块；它不选择单个工位。
+Within a trigger, SFM visits sources and targets in order. Earlier targets may receive scarce ingredients first. Use small per-machine budgets or `output retain N to each ...`, but ensure each machine can obtain a complete recipe. `output N to group` shares one budget across the entire group and may split it among blocks; it does not select one complete workstation.
 
-## 接收容量与吞吐
+## Receiving capacity and throughput
 
-分别检查机器输出槽/罐、外部接收库存、AE 返回缓存、网络存储容量。**没有“出口方块数量 ≥ 产物种类数”的通用规则**：一个多槽箱可接收多种物品，一个多罐仓可接收多种流体；单罐才通常只能同时存一种流体。
+Check these separately: machine output slots/tanks, external receiving inventories, AE return buffers, and network storage. **There is no general rule that output-block count must equal or exceed product-type count.** A chest has many slots; a multi-tank hatch can hold several fluids; a single tank usually holds one fluid at a time.
 
-按实际槽/罐、过滤与吞吐计算接收能力。专用出口便于排错，但不必每种资源一个方块。容量不足时有些机器停机，有些丢弃资源；按版本核对后决定加缓存、扩大吞吐或暂停输入。只对允许丢弃的副产物设置销毁出口。
+Calculate usable slots/tanks, filters, sustained transfer rate, and reserve capacity. Dedicated outputs simplify diagnosis but are a design choice. When storage fills, some machines stop and others discard excess resources. Verify the behavior before choosing extra buffers, more transfer capacity, or an input cutoff. Void only byproducts the user agrees may be discarded.
 
-Mekanism 核对分支：水 2 mB → 氢 2+氧 1；盐水 10 mB → 钠 1+氯 1，两路线共四种化学品。按实际产量、下游消耗和所需缓存时间计算储罐容量，不能给出固定的氢气储罐数量比例。化学品接入 ME 还需 Applied Mekanistics 等兼容层。
+In the checked Mekanism branch, water separation uses 2 mB water to produce 2 hydrogen and 1 oxygen; brine separation uses 10 mB brine to produce 1 sodium and 1 chlorine. These routes produce four chemicals in total. Size buffers from production rate, downstream consumption, and desired buffering time; do not prescribe a universal hydrogen-tank ratio. ME chemical storage also needs suitable integration, such as Applied Mekanistics.
 
-## 多材料批量合成：先配置，再选型
+## Multi-ingredient recipes: configure before replacing machines
 
-| 机器 | 核对的结构/原生手段 | 阵列设计要点 |
+| Machine | Checked structure and native controls | Array design |
 |---|---|---|
-| AE2 压印器 | 3 输入+1 输出；小输入缓冲；侧面分离可选 | 明确库存映射，预装印模，按配方分组 |
-| ExtendedAE 扩展压印器 | 4 线程，各 3 输入+1 输出；1/4/64 缓冲 | 缩小缓冲并按线程/材料角色配齐；不要和 AdvancedAE 混名 |
-| ExtendedAE 水晶装配器 | 9 输入+1 输出 | 给不同材料留独立槽位，限制每次补料，避免单种材料填满全部输入 |
-| MI 装配机 | 锁槽、槽位限量、原生自动输出 | 锁定配方与流体，用 MI 电缆提供匹配电压的 EU |
+| AE2 Inscriber | Three inputs, one output; small input buffer; optional sided separation | Verify inventory mapping, preload presses, group by recipe |
+| ExtendedAE Extended Inscriber | Four threads, each with three inputs and one output; 1/4/64 buffer options | Limit buffers and provide complete materials per thread; distinguish ExtendedAE from AdvancedAE |
+| ExtendedAE Crystal Assembler | Nine input slots, one output | Reserve slots for different ingredients and limit replenishment |
+| MI Assembler | Slot locks, per-slot limits, native automatic output | Lock recipe inputs and fluids; supply matching-voltage EU through MI cables |
 
-优先使用机器原生的过滤、锁槽和缓冲限制，再决定是否需要状态机。速度取决于版本、配方、供电和升级；基础机器与高级机器应在相同配置下比较，不能从一次卡料推导普遍选型结论。
+Prefer native filtering, locks, and buffer limits before adding state. Speed depends on versions, recipes, power, and upgrades. Compare machines under equivalent conditions; a single stalled array does not establish a universal machine-selection rule.
 
-下面是**专用配方容器 → 已锁槽的 MI 装配机**的物料骨架：容器中只放用户已确认的一种配方的物品，机器只做该配方，流体另设对应输入。SFM 不承担默认配置下的 EU 供电。示例数量 1 仅适用于每个输入槽需 1 件的配方，其他数量按实际配方修改；空闲槽锁空，不让单种原料占用它们。
+This skeleton feeds **dedicated recipe storage into slot-locked MI Assemblers**. The source contains only the verified ingredients for one recipe. Each illustrated input slot requires one item; change limits for the real recipe. Lock unused slots empty, supply fluids separately, and use MI's own EU power system unless FE compatibility is confirmed.
 
 ```sfml
 every 20 ticks do
-    input from "配方物品箱" top side
-    output retain 1 to each "装配" top side slots 0
-    output retain 1 to each "装配" top side slots 1
-    output retain 1 to each "装配" top side slots 2
+    input from recipe_items top side
+    output retain 1 to each assemblers top side slots 0
+    output retain 1 to each assemblers top side slots 1
+    output retain 1 to each assemblers top side slots 2
     forget
-    input from each "装配" bottom side
-    output to "成品箱" top side
+    input from each assemblers bottom side
+    output to results top side
 end
 ```
 
-槽号 0/1/2 是示意：必须用网络工具确认各面自动化库存，只将三个输入槽锁定为所需材料，收取面仅暴露产物。多配方用独立标签/容器，不让两个触发器向同一组未锁槽机器不断投放不同配方。
+Labels: `recipe_items` = dedicated input chest; `assemblers` = machines with verified input locks; `results` = receiving chest. Slot numbers 0–2 are illustrative. Confirm automation indices per face, lock each to its intended ingredient, and ensure the collection face exposes only products. Different recipes need separate groups or an explicit changeover procedure.
 
-## 社区测量的适用范围
+## Limits of community measurements
 
-旧稿记录过 1024 台机器中 258/762 台分流、卡料 10–50 台或 125–250 台、少于 40% 机器工作等数字。这些观察缺少版本、机器选项、配方、供电、布局与可复现程序，**不能作为通用吞吐或卡死概率**；也未证实跨压印器线程“自动迁移原料”是通用机制。
+Earlier notes reported splits such as 258/762 machines in a 1,024-machine array, 10–50 or 125–250 stalled machines, and utilization below 40%. Those reports lack sufficient versions, settings, recipes, power, layouts, and reproducible programs. **Do not use them as throughput guarantees or stall probabilities.** Ingredient migration between Inscriber threads is also not established as universal behavior.
 
-复现时记录：MC/加载器/各模组版本与配置、机器数量、配方、锁槽/缓冲、升级、能源、目标库存与 SFM 程序；比较单台与阵列吞吐、管理器耗时，并区分配方未齐、能源不足、接口拒收、缓存满和资源丢失。
+For a useful reproduction, record Minecraft/loader/mod versions, configuration, machine count, recipe, locks/buffers, upgrades, power, destination storage, and the SFM program. Compare single-machine and array throughput and manager execution time. Distinguish incomplete recipes, insufficient power, rejected insertion, full buffers, and resource loss.
 
-## 性能提示
+## Reduce execution cost
 
-SFM 在每次触发时都要逐个访问相关方块的槽位，开销可以粗略理解为：**方块数 × 面数 × 槽位数 × 触发频率**。大批量物流时，SFM 本身就可能成为服务器卡顿的来源，所以写程序时应优先压低这几项（规则见 SKILL.md 2.4、2.5）。
+A useful cost approximation is **blocks × sides × slots × trigger frequency**, with additional work for resource-pattern expansion and conditions. This is a heuristic, not a precise complexity guarantee.
 
-降低开销的手段（按收益排序）：
+1. **Run less often:** use 40–200 ticks for nonurgent collection, storage, and fuel replenishment. Enable fast clocks only when needed.
+2. **Visit less inventory:** restrict labels and slots where useful. `empty slots in` skips occupied insertion targets but also skips partial stacks. Grouping labels simplifies code; it does not by itself reduce the number of machines visited.
+3. **Use concrete sides:** avoid seven capability visits from `each side` when one face works.
+4. **Narrow resource matching:** avoid broad regex combined with per-resource `each`.
+5. **Simplify conditions:** use retention and output order where equivalent; reserve state machines for real ordering needs.
+6. **Spread work:** use supported timer offsets to avoid running several large triggers on the same tick.
+7. **Use native transport:** fixed routes may be cheaper with ejection, pipes, or AE/RS interfaces.
 
-1. **降频**：不急的工作（收产物、整理仓库、补燃料）改成 40–200 刻；高频红石时钟只在必要时开启。
-2. **少扫方块**：一类机器一个标签；大型仓库用 `empty slots in` 放入，避免扫描已满的槽位。
-3. **少扫面**：写具体的面，不用 `each side`。
-4. **少枚举资源**：写具体资源 ID，避免宽泛正则配合数字后的 `each`。
-5. **少写逻辑**：能用 `retain`、输出顺序代替的 `if` 都去掉；状态机只在必要时使用。
-6. **分摊**：多个大触发器用 `offset by` 错开到不同的刻，避免同一刻集中执行。
-7. **交给别的模组**：固定方向的搬运交给机器自动弹出、管道或 AE/RS 接口。
-
-如何定位卡顿：管理器界面的**性能图**可以对比不同写法的耗时；服务器装有 spark 等性能分析模组时，可以用它确认卡顿是否来自 SFM。
-
-其他提示：
-
-- 最小间隔 20 刻就是为了让"糟糕的程序"不要每刻跑。
-- 不需要的东西不要用 `each` + 宽泛通配（会枚举注册表）；能写具体名字就写具体名字。
-- 能量传输单独放一个 `every tick`，其他放 `every 20 ticks`。
-- 用 `empty slots in` 往大型已满的箱子里放东西。
-- 在管理器界面有**性能图**，可对比两种写法的耗时。
+Compare designs in the manager's performance graph. If the server has spark or another profiler, use it to confirm whether SFM causes the lag. Keep energy in a separate eligible 1-tick trigger; ordinary transfers should meet the configured timer minimum. See SKILL.md 2.5 for cases requiring performance notes.
